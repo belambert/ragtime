@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "wikibot"
+version = "0.1.0"
+description = ""
+authors = ["Ben Lambert <blambert@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+transformers = "^4.36.2"
+# transformers = { git = "git@github.com:belambert/transformers.git" }
+datasets = "^2.16.1"
+# datasets = { git = "git@github.com:belambert/datasets.git" }
+torch = "^2.1.2"
+wikipedia = "^1.4.0"
+requests = "^2.31.0"
+typer = "^0.9.0"
+faiss-cpu = "^1.7.4"
+bitsandbytes = "^0.42.0"
+accelerate = "^0.26.1"
+halo = "^0.0.31"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+mypy = "^1.8.0"
+pylint = "^3.0.3"
+isort = "^5.13.2"
+types-requests = "^2.31.0.20240106"
+pytest = "^7.4.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.mypy.overrides]]
+module = [
+    "huggingface_hub.*",
+    "transformers.*",
+    "wikipedia.*",
+#    "easydict.*",
+#    "tokenizers.*",
+#    "torchvision.*",
+]
+ignore_missing_imports = true
+
+[tool.pylint."messages control"]
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+]
