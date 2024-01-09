@@ -1,0 +1,34 @@
+name: build_image
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGION: us
+
+jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
+
+      - name: "setup GCP SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
+
+      - name: "use gcloud cli"
+        run: "gcloud info"
+
+      - name: "setup docker auth"
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: docker build
+        run: make dockerbuild
+
+      - name: docker push
+        run: make dockerpush
