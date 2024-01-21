@@ -29,7 +29,8 @@ def main(
     docs_dict = retriever(
         input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt"
     )
-    # keys of docs_dict are: dict_keys(['context_input_ids', 'context_attention_mask', 'retrieved_doc_embeds', 'doc_ids'])
+    # keys of docs_dict are: dict_keys(['context_input_ids',
+    # 'context_attention_mask', 'retrieved_doc_embeds', 'doc_ids'])
 
     # 2b. compute the doc scores
     print("scoring...")
