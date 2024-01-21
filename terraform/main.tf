@@ -28,3 +28,9 @@ resource "google_artifact_registry_repository" "repo" {
     }
   }
 }
+
+resource "google_storage_bucket" "bucket" {
+  name          = "ragtime"
+  location      = "US"
+  public_access_prevention = "enforced"
+}
