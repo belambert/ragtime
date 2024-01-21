@@ -18,12 +18,16 @@ dockerpush:
 check:
 	poetry run black --check --color ragtime tests
 	poetry run isort --check ragtime tests
+	poetry run ruff .
 	poetry run mypy ragtime tests
 	poetry run pylint ragtime tests
 
 format:
 	poetry run black ragtime tests
 	poetry run isort ragtime tests
+
+fix: format
+	poetry run ruff . --fix
 
 test:
 	poetry run pytest tests

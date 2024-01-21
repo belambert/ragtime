@@ -1,4 +1,3 @@
-import logging
 
 import typer
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
