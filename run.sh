@@ -22,15 +22,15 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
               "volumes": []
             }
           }
-        },
+        ],
         "volumes": [
-           {
-             "gcs": {
-               "remotePath": "ragtime"
-             },
-             "mountPath": "/mnt/disks/data"
-           }
-         ]
+          {
+            "gcs": {
+              "remotePath": "ragtime"
+            },
+            "mountPath": "/mnt/disks/data"
+          }
+        ]
       }
     }
   ],
