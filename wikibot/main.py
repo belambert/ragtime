@@ -25,9 +25,6 @@ URL = "https://en.wikipedia.org/w/api.php"
 # TODO - use the smaller model to speed up generation
 
 
-
-
-
 def cli(
     query: Annotated[str, typer.Argument()],
     small: Annotated[bool, typer.Option()] = False,
@@ -55,6 +52,7 @@ def cli(
             print(f"From {title} ({score:.6f}):")
             print(f"{answer}\n")
 
+
 def is_good_answer(answer: str):
     if "I don't know" in answer:
         return False
@@ -70,6 +68,7 @@ def is_good_answer(answer: str):
         return False
     return True
 
+
 def load_model(small, device):
     if small:
         tokenizer = AutoTokenizer.from_pretrained(SMALL_MODEL)
@@ -82,6 +81,7 @@ def load_model(small, device):
         FULL_MODEL, torch_dtype=torch.float16, load_in_8bit=True
     )
     return model, tokenizer
+
 
 def search_wiki(query: str, n_docs: int) -> list[wikipedia.WikipediaPage]:
     sess = requests.Session()
@@ -130,7 +130,7 @@ def generate(prompt: str, tokenizer, model, device) -> tuple[str, float]:
         avg_token_prob = torch.mean(token_probs).item()
 
     str_ = tokenizer.decode(tokens[0], skip_special_tokens=True)
-    str_ = str_[len(prompt)-1 :]
+    str_ = str_[len(prompt) - 1 :]
     return str_, avg_token_prob
 
 

@@ -19,6 +19,7 @@ faiss-cpu = "^1.7.4"
 bitsandbytes = "^0.42.0"
 accelerate = "^0.26.1"
 halo = "^0.0.31"
+numpy = "^1.26.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -38,9 +39,6 @@ module = [
     "huggingface_hub.*",
     "transformers.*",
     "wikipedia.*",
-#    "easydict.*",
-#    "tokenizers.*",
-#    "torchvision.*",
 ]
 ignore_missing_imports = true
 
