@@ -2,7 +2,7 @@ PROJECT_ID=llm-exp-405305
 REGION=us
 
 COMMIT=$(shell git rev-parse HEAD)
-BASE="us-docker.pkg.dev/$(PROJECT_ID)/wikibot/main"
+BASE="us-docker.pkg.dev/$(PROJECT_ID)/ragtime/main"
 VERSION=$(BASE):$(COMMIT)
 LATEST=$(BASE):latest
 
@@ -16,14 +16,14 @@ dockerpush:
 	docker push $(VERSION)
 
 check:
-	poetry run black --check --color wikibot tests
-	poetry run isort --check wikibot tests
-	poetry run mypy wikibot tests
-	poetry run pylint wikibot tests
+	poetry run black --check --color ragtime tests
+	poetry run isort --check ragtime tests
+	poetry run mypy ragtime tests
+	poetry run pylint ragtime tests
 
 format:
-	poetry run black wikibot tests
-	poetry run isort wikibot tests
+	poetry run black ragtime tests
+	poetry run isort ragtime tests
 
 test:
 	poetry run pytest tests

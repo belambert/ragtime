@@ -1,4 +1,5 @@
 import typer
+import logging
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
 
@@ -8,6 +9,8 @@ from wikibot.device import get_device
 # https://huggingface.co/datasets/wiki_dpr
 # https://huggingface.co/facebook/rag-token-nq
 
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.INFO)
 
 def main(query: Annotated[str, typer.Argument()]):
     device = get_device()

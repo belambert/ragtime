@@ -4,12 +4,12 @@ provider "google" {
   zone    = "us-central1-c"
 }
 
-resource "google_artifact_registry_repository" "inat" {
+resource "google_artifact_registry_repository" "repo" {
   provider               = google-beta
   project                = "llm-exp-405305"
   location               = "us"
-  repository_id          = "wikibot"
-  description            = "wikibot repo"
+  repository_id          = "ragtime"
+  description            = "ragtime repo"
   format                 = "DOCKER"
   cleanup_policy_dry_run = false
   cleanup_policies {
