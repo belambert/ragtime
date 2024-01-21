@@ -1,4 +1,4 @@
-gcloud batch jobs submit --job-prefix wikibot --location us-central1 --config - <<EOD
+gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - <<EOD
 {
   "taskGroups": [
     {
@@ -13,11 +13,11 @@ gcloud batch jobs submit --job-prefix wikibot --location us-central1 --config - 
         "runnables": [
           {
             "container": {
-              "imageUri": "us-docker.pkg.dev/llm-exp-405305/wikibot/main:latest",
+              "imageUri": "us-docker.pkg.dev/llm-exp-405305/ragtime/main:latest",
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./wikibot/main.py \"who is the president?\""
+                "poetry run python ./ragtime/main.py \"who is the president?\""
               ],
               "volumes": []
             }
