@@ -22,14 +22,17 @@ def main(
         print(f"{input_ids=}")
 
     # 1. Encode
+    print("encoding...")
     question_hidden_states = model.question_encoder(input_ids)[0]
     # 2a. Retrieve the docs
+    print("retrieving...")
     docs_dict = retriever(
         input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt"
     )
     # keys of docs_dict are: dict_keys(['context_input_ids', 'context_attention_mask', 'retrieved_doc_embeds', 'doc_ids'])
 
     # 2b. compute the doc scores
+    print("scoring...")
     doc_scores = torch.bmm(
         question_hidden_states.unsqueeze(1),
         docs_dict["retrieved_doc_embeds"].float().transpose(1, 2),

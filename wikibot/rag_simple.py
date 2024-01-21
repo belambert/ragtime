@@ -16,8 +16,11 @@ def main(query: Annotated[str, typer.Argument()]):
     print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
+    # retriever = RagRetriever.from_pretrained(
+    #     "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+    # )
     retriever = RagRetriever.from_pretrained(
-        "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+        "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
     )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
@@ -27,7 +30,7 @@ def main(query: Annotated[str, typer.Argument()]):
     input_dict = tokenizer.prepare_seq2seq_batch(query, return_tensors="pt")
 
     print("generating...")
-    generated = model.generate(input_ids=input_dict["input_ids"])
+    generated = model.generate(input_ids=input_dict["input_ids"], max_new_tokens=5)
     print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
 
 

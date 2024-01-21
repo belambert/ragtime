@@ -21,7 +21,7 @@ import torch.distributed as dist
 import torch.distributed as torch_distrib
 # # need the parent dir module
 # sys.path.insert(2, str(Path(__file__).resolve().parents[1]))
-from lightning_base import (BaseTransformer, add_generic_args,  # noqa
+from wikibot.hf_rag_finetune.lightning_base import (BaseTransformer, add_generic_args,  # noqa
                             generic_train)
 from pytorch_lightning.plugins.training_type import DDPPlugin
 from torch.utils.data import DataLoader

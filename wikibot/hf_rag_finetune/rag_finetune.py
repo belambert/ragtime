@@ -21,7 +21,7 @@ import torch.distributed as dist
 import torch.distributed as torch_distrib
 # # need the parent dir module
 # sys.path.insert(2, str(Path(__file__).resolve().parents[1]))
-from lightning_base import (BaseTransformer, add_generic_args,  # noqa
+from wikibot.hf_rag_finetune.lightning_base import (BaseTransformer, add_generic_args,  # noqa
                             generic_train)
 # from pytorch_lightning.plugins.training_type import DDPPlugin
 from torch.utils.data import DataLoader
@@ -35,7 +35,7 @@ from transformers.integrations import is_ray_available
 
 
 # from distributed_pytorch_retriever import RagPyTorchDistributedRetriever  # noqa: E402 # isort:skip
-from utils_rag import (  # noqa: E402 # isort:skip
+from wikibot.hf_rag_finetune.utils_rag import (  # noqa: E402 # isort:skip
     calculate_exact_match,
     flatten_list,
     get_git_info,
@@ -48,7 +48,7 @@ from utils_rag import (  # noqa: E402 # isort:skip
     Seq2SeqDataset,
 )
 
-from callbacks_rag import (  # noqa: E402 # isort:skipq
+from wikibot.hf_rag_finetune.callbacks_rag import (  # noqa: E402 # isort:skipq
     get_checkpoint_callback,
     get_early_stopping_callback,
     Seq2SeqLoggingCallback,
