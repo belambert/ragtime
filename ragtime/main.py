@@ -1,4 +1,3 @@
-
 import typer
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
