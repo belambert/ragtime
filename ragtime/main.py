@@ -1,5 +1,6 @@
-import typer
 import logging
+
+import typer
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
 
@@ -9,9 +10,14 @@ from ragtime.device import get_device
 # https://huggingface.co/datasets/wiki_dpr
 # https://huggingface.co/facebook/rag-token-nq
 
+# For Ray finetuning see:
+# https://huggingface.co/blog/ray-rag
+# https://shamanesiri.medium.com/how-to-finetune-the-entire-rag-architecture-including-dpr-retriever-4b4385322552
+# https://github.com/huggingface/transformers/blob/main/examples/research_projects/rag/finetune_rag.py
 
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.INFO)
+
 
 def main(query: Annotated[str, typer.Argument()]):
     device = get_device()
