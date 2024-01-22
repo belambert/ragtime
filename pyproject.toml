@@ -41,7 +41,7 @@ build-backend = "poetry.core.masonry.api"
 module = [
     "huggingface_hub.*",
     "transformers.*",
-    "wikipedia.*",
+    "datasets.*",
 ]
 ignore_missing_imports = true
 

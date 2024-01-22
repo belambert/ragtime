@@ -32,7 +32,12 @@ def main(query: Annotated[str, typer.Argument()]):
         "facebook/rag-token-nq", retriever=retriever
     )
     print("preparing input...")
+    # need to understand what this does...
     input_dict = tokenizer.prepare_seq2seq_batch(query, return_tensors="pt")
+    # as_target_tokenizer() is not available for this tokenizer
+    # with tokenizer.as_target_tokenizer():
+    #     input_dict = tokenizer(query, return_tensors="pt")
+    print(input_dict)
 
     print("generating...")
     generated = model.generate(input_ids=input_dict["input_ids"], max_new_tokens=5)
