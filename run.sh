@@ -1,3 +1,6 @@
+# poetry run python ./ragtime/train_translate.py
+# poetry run python ./ragtime/main.py \"what are asters?\""
+
 gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - <<EOD
 {
   "taskGroups": [
@@ -6,9 +9,9 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
       "parallelism": "1",
       "taskSpec": {
         "computeResource": {
-          "cpuMilli": "4000",
-          "memoryMib": "32000",
-          "bootDiskMib": "100000"
+          "cpuMilli": "8000",
+          "memoryMib": "16000",
+          "bootDiskMib": "10000"
         },
         "runnables": [
           {
@@ -17,7 +20,7 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./ragtime/main.py \"what are asters?\""
+                "poetry run python ./ragtime/train_translate.py"
               ],
               "volumes": []
             }

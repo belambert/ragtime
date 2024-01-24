@@ -23,6 +23,8 @@ from ragtime.device import get_device
 # https://towardsdatascience.com/how-to-fine-tune-a-q-a-transformer-86f91ec92997
 # https://stackoverflow.com/questions/75854700/how-to-fine-tune-a-huggingface-seq2seq-model-with-a-dataset-from-the-hub
 
+MAX_LENGTH = 128
+
 
 def main(query: Annotated[str, typer.Argument()]):
     device = get_device()
@@ -40,8 +42,29 @@ def main(query: Annotated[str, typer.Argument()]):
 
     train = dataset["train"]
 
-    train = train.map(lambda x: tokenizer(x["query"]), batched=True)
-    print(train)
+    def preprocess(examples):
+        inputs = [ex["query"] for ex in examples]
+        targets = [ex["answers"] for ex in examples]
+        model_inputs = tokenizer(
+            inputs, text_target=targets, max_length=MAX_LENGTH, truncation=True
+        )
+        return model_inputs
+
+    tokenized_datasets = train.map(
+        preprocess,
+        batched=True,
+        remove_columns=train.column_names,
+        num_proc=1,
+    )
+
+    print(tokenized_datasets)
+
+    return
+
+    # train = train.map(lambda x: tokenizer(x["query"]), batched=True)
+    # print(train)
+
+    # DataCollatorForSeq2Seq
 
     train_loader = DataLoader(train, batch_size=16, shuffle=True)
 
