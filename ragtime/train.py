@@ -42,7 +42,7 @@ EPOCHS = 1
 def main():
     device = get_device()
     print(device)
-
+    print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
     retriever = RagRetriever.from_pretrained(
@@ -94,6 +94,41 @@ def main():
             print(batch)
             result = model(*batch)
             print(result)
+
+            # 1. Encode
+            print("encoding...")
+            question_hidden_states = model.question_encoder(batch["input_ids"])[0]
+            # 2a. Retrieve the docs
+            print("retrieving...")
+            docs_dict = retriever(
+                batch["input_ids"].numpy(), question_hidden_states.detach().numpy(), return_tensors="pt"
+            )
+            # keys of docs_dict are: dict_keys(['context_input_ids',
+            # 'context_attention_mask', 'retrieved_doc_embeds', 'doc_ids'])
+
+            # 2b. compute the doc scores
+            print("scoring...")
+            doc_scores = torch.bmm(
+                question_hidden_states.unsqueeze(1),
+                docs_dict["retrieved_doc_embeds"].float().transpose(1, 2),
+            ).squeeze(1)
+
+            # if print_docs:
+            #     _print_docs(docs_dict, doc_scores, dataset)
+
+            # 3. generate
+            generated = model.generate(
+                context_input_ids=docs_dict[
+                    "context_input_ids"
+                ],  # the text of the retrieved docs
+                context_attention_mask=docs_dict["context_attention_mask"],
+                doc_scores=doc_scores,
+            )
+            print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
+
+
+
+
             # print(batch.keys())
             # print(batch["input_ids"])
             # print(len(batch["labels"]))
