@@ -87,6 +87,9 @@ def main():
         # for batch in tokenized_data["train"].iter(4, drop_last_batch=True):
         for batch in dataset["train"].iter(4, drop_last_batch=True):
             print(batch)
+
+            print(tokenizer.batch_decode(batch["input_ids"], skip_special_tokens=True))
+
             answers = list(map(lambda x: x[0], batch["answers"]))
             batch = tokenizer.prepare_seq2seq_batch(
                 batch["query"], answers, return_tensors="pt"
