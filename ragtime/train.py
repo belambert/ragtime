@@ -93,19 +93,21 @@ def main():
                 batch["query"], answers, return_tensors="pt"
             )
 
-            print(tokenizer.question_encoder.batch_decode(batch["input_ids"], skip_special_tokens=True))
+            # print(tokenizer.question_encoder.batch_decode(batch["input_ids"], skip_special_tokens=True))
+            print(tokenizer.question_encoder.batch_decode(batch, skip_special_tokens=True))
             # print(batch)
             # result = model(*batch)
             # print(result)
 
             # 1. Encode
             print("encoding...")
-            question_hidden_states = model.question_encoder(batch["input_ids"])[0]
+            # question_hidden_states = model.question_encoder(batch["input_ids"])[0]
+            question_hidden_states = model.question_encoder(batch)[0]
             # 2a. Retrieve the docs
             print("retrieving...")
             docs_dict = retriever(
                 # batch["input_ids"].numpy(), question_hidden_states.detach().numpy(), return_tensors="pt"
-                batch["input_ids"], question_hidden_states, return_tensors="pt"
+                batch["input_ids"].numpy(), question_hidden_states.numpy(), return_tensors="pt"
             )
             # keys of docs_dict are: dict_keys(['context_input_ids',
             # 'context_attention_mask', 'retrieved_doc_embeds', 'doc_ids'])
