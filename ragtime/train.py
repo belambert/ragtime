@@ -98,6 +98,8 @@ def main():
                     batch["input_ids"], skip_special_tokens=True
                 )
             )
+            print("labels:")
+            print(batch["labels"])
             # print(tokenizer.question_encoder.batch_decode(batch, skip_special_tokens=True))
             # print(batch)
             # result = model(*batch)
@@ -145,6 +147,7 @@ def main():
                 doc_scores=doc_scores,
                 return_dict_in_generate=True,
                 return_dict=True,
+                labels=batch["labels"]
             )
 
             print(generated.loss)
