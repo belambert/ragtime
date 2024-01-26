@@ -1,7 +1,19 @@
+import torch
 import typer
 from datasets import load_dataset
 from torch.utils.data import DataLoader
-from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
+from transformers import (
+    AutoModelForSeq2SeqLM,
+    AutoTokenizer,
+    BartForConditionalGeneration,
+    DataCollatorForSeq2Seq,
+    DefaultDataCollator,
+    RagRetriever,
+    RagTokenForGeneration,
+    RagTokenizer,
+    Seq2SeqTrainer,
+    Seq2SeqTrainingArguments,
+)
 from typing_extensions import Annotated
 
 from ragtime.device import get_device
@@ -24,71 +36,112 @@ from ragtime.device import get_device
 # https://stackoverflow.com/questions/75854700/how-to-fine-tune-a-huggingface-seq2seq-model-with-a-dataset-from-the-hub
 
 MAX_LENGTH = 128
+EPOCHS = 1
 
 
-def main(query: Annotated[str, typer.Argument()]):
+def main():
     device = get_device()
     print(device)
 
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
+    print("loading retriever...")
+    retriever = RagRetriever.from_pretrained(
+        "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+    )
+    print("loading model...")
+    model = RagTokenForGeneration.from_pretrained(
+        "facebook/rag-token-nq", retriever=retriever
+    )
+
+    # tokenizer = AutoTokenizer.from_pretrained("facebook/bart-base")
 
     # v2 is much larger
     dataset = load_dataset("ms_marco", "v1.1")
     # dataset = load_dataset("ms_marco", 'v2.1')
+    dataset["train"] = dataset["train"].select(range(100))
+    dataset["test"] = dataset["test"].select(range(100))
+    dataset["validation"] = dataset["validation"].select(range(100))
     print(dataset)
-    # print(dataset["train"][0])
-    print(dataset["train"][0]["query"])
-    print(dataset["train"][0]["answers"])
 
-    train = dataset["train"]
+    # def preprocess(examples):
+    #     inputs = examples["query"]
+    #     targets = [
+    #         answers[0] if len(answers) > 0 else "" for answers in examples["answers"]
+    #     ]
+    #     model_inputs = tokenizer(
+    #         inputs, text_target=targets, max_length=MAX_LENGTH, truncation=True
+    #     )
+    #     return model_inputs
 
-    def preprocess(examples):
-        inputs = [ex["query"] for ex in examples]
-        targets = [ex["answers"] for ex in examples]
-        model_inputs = tokenizer(
-            inputs, text_target=targets, max_length=MAX_LENGTH, truncation=True
-        )
-        return model_inputs
+    # tokenized_data = dataset.map(
+    #     preprocess,
+    #     batched=True,
+    #     remove_columns=dataset["train"].column_names,
+    #     num_proc=8,
+    # )
+    # collator = DefaultDataCollator()
+    # collator = DataCollatorForSeq2Seq(tokenizer) #, model=model)
+    # print(tokenized_data)
 
-    tokenized_datasets = train.map(
-        preprocess,
-        batched=True,
-        remove_columns=train.column_names,
-        num_proc=1,
-    )
-
-    print(tokenized_datasets)
-
+    for epoch in range(EPOCHS):
+        # for batch in tokenized_data["train"].iter(4, drop_last_batch=True):
+        for batch in dataset["train"].iter(4, drop_last_batch=True):
+            print(batch)
+            answers = list(map(lambda x: x[0], batch["answers"]))
+            batch = tokenizer.prepare_seq2seq_batch(
+                batch["query"], answers, return_tensors="pt"
+            )
+            print(batch)
+            result = model(*batch)
+            print(result)
+            # print(batch.keys())
+            # print(batch["input_ids"])
+            # print(len(batch["labels"]))
+            # # print(torch.tensor(batch["input_ids"]))
+            # print(collator(batch))
+            break
     return
 
-    # train = train.map(lambda x: tokenizer(x["query"]), batched=True)
-    # print(train)
+    model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
 
-    # DataCollatorForSeq2Seq
+    # print("loading retriever...")
+    # retriever = RagRetriever.from_pretrained(
+    #     "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+    # )
+    # print("loading model...")
+    # model = RagTokenForGeneration.from_pretrained(
+    #     "facebook/rag-token-nq", retriever=retriever
+    # )
+    # print(model)
 
-    train_loader = DataLoader(train, batch_size=16, shuffle=True)
+    collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
-    for batch in train_loader:
-        print(batch)
-
-    # don't change the tokenizer
-
-    retriever = RagRetriever.from_pretrained(
-        "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+    args = Seq2SeqTrainingArguments(
+        "training_ragtime",
+        evaluation_strategy="no",
+        save_strategy="epoch",
+        learning_rate=2e-5,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        weight_decay=0.01,
+        save_total_limit=3,
+        num_train_epochs=3,
+        predict_with_generate=True,
+        fp16=False,
     )
-    model = RagTokenForGeneration.from_pretrained(
-        "facebook/rag-token-nq", retriever=retriever
+
+    trainer = Seq2SeqTrainer(
+        model,
+        args,
+        train_dataset=tokenized_data["train"],
+        eval_dataset=tokenized_data["test"],
+        data_collator=collator,
+        tokenizer=tokenizer,
+        # compute_metrics=compute_metrics,
     )
-    print(model)
-
-    # things we need to tune...
-    # model.question_encoder
-
-    input_dict = tokenizer.prepare_seq2seq_batch(query, return_tensors="pt")
-    print(input_dict)
-    # print("generating...")
-    # generated = model.generate(input_ids=input_dict["input_ids"], max_new_tokens=20)
-    # print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
+    trainer.evaluate(max_length=MAX_LENGTH)
+    trainer.train()
+    # trainer.evaluate(max_length=MAX_LENGTH)
 
 
 if __name__ == "__main__":
