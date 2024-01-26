@@ -147,8 +147,8 @@ def main():
                 return_dict=True,
             )
 
-            print(generated)
-            print(tokenizer.batch_decode(generated, skip_special_tokens=True))
+            print(generated.loss)
+            # print(tokenizer.batch_decode(generated, skip_special_tokens=True))
 
             # print(batch.keys())
             # print(batch["input_ids"])
