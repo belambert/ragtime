@@ -20,20 +20,18 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./ragtime/train_translate.py"
+                "poetry run python ./ragtime/train.py"
               ],
               "volumes": []
             }
           }
         ],
         "volumes": [
-          {
-            "gcs": {
-              "remotePath": "ragtime"
-            },
-            "mountPath": "/mnt/disks/data"
-          }
-        ]
+           {
+	     "deviceName": "wiki-dpr",
+             "mountPath": "/mnt/disks/data"
+           }
+         ]
       }
     }
   ],
@@ -46,6 +44,12 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
             {
               "type": "nvidia-l4",
               "count": 1
+            }
+          ],
+          "disks": [
+            {
+              "deviceName": "wiki-dpr",
+              "existingDisk": "projects/llm-exp-405305/zones/us-central1-a/disks/wiki-dpr"
             }
           ]
         }

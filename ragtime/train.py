@@ -52,6 +52,8 @@ def main():
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq", retriever=retriever
     )
+    model.train()
+    model.context_encoder_training = True
 
     # tokenizer = AutoTokenizer.from_pretrained("facebook/bart-base")
 
@@ -98,14 +100,18 @@ def main():
                     batch["input_ids"], skip_special_tokens=True
                 )
             )
-
+            del batch["token_type_ids"]
+            print(batch.keys())
             print(model(*batch))
             return
 
-
             # print("labels:")
             # print(batch["labels"])
-            print(tokenizer.question_encoder.batch_decode(batch["labels"], skip_special_tokens=True))
+            print(
+                tokenizer.question_encoder.batch_decode(
+                    batch["labels"], skip_special_tokens=True
+                )
+            )
             # print(tokenizer.question_encoder.batch_decode(batch, skip_special_tokens=True))
             # print(batch)
             # result = model(*batch)
@@ -154,7 +160,7 @@ def main():
                 return_dict_in_generate=True,
                 return_dict=True,
                 labels=batch["labels"],
-                reduce_loss=False
+                reduce_loss=False,
             )
 
             print(generated.loss)
