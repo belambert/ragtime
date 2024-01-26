@@ -129,11 +129,11 @@ def main():
                 ],  # the text of the retrieved docs
                 context_attention_mask=docs_dict["context_attention_mask"],
                 doc_scores=doc_scores,
+                return_dict_in_generate=True,
+                return_dict=True
             )
+            print(generated)
             print(tokenizer.batch_decode(generated, skip_special_tokens=True))
-
-
-
 
             # print(batch.keys())
             # print(batch["input_ids"])
