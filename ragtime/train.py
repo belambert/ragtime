@@ -105,7 +105,7 @@ def main():
             print("retrieving...")
             docs_dict = retriever(
                 # batch["input_ids"].numpy(), question_hidden_states.detach().numpy(), return_tensors="pt"
-                batch["input_ids"], question_hidden_states, return_tensors="pt"
+                batch["input_ids"].numpy(), question_hidden_states.numpy(), return_tensors="pt"
             )
             # keys of docs_dict are: dict_keys(['context_input_ids',
             # 'context_attention_mask', 'retrieved_doc_embeds', 'doc_ids'])
