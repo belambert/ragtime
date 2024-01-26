@@ -21,4 +21,4 @@ RUN apt update && \
 
 RUN pip install poetry==1.7.1
 RUN poetry install
-CMD ["poetry", "run", "python", "ragtime/main.py"]
+CMD ["poetry", "run", "python", "ragtime/train.py"]
