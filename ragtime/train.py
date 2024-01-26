@@ -128,7 +128,7 @@ def main():
                 context_attention_mask=docs_dict["context_attention_mask"],
                 doc_scores=doc_scores,
             )
-            print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
+            print(tokenizer.batch_decode(generated, skip_special_tokens=True))
 
 
 
