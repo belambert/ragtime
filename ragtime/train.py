@@ -98,9 +98,9 @@ def main():
                     batch["input_ids"], skip_special_tokens=True
                 )
             )
-            print("labels:")
-            print(batch["labels"])
-            print(tokenizer.batch_decode(batch["labels"], skip_special_tokens=True))
+            # print("labels:")
+            # print(batch["labels"])
+            print(tokenizer.question_encoder.batch_decode(batch["labels"], skip_special_tokens=True))
             # print(tokenizer.question_encoder.batch_decode(batch, skip_special_tokens=True))
             # print(batch)
             # result = model(*batch)
