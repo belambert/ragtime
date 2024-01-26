@@ -44,6 +44,9 @@ line-length = 88
 profile = "black"
 skip_gitignore = true
 
+# [tool.ruff]
+# ignore = ["ragtime/train_translate.py"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

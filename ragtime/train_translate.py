@@ -1,5 +1,9 @@
+# ruff: noqa
 import evaluate
+import torch
 from datasets import load_dataset
+from torch.utils.data import DataLoader
+from tqdm.auto import tqdm
 from transformers import (
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
@@ -104,7 +108,6 @@ def main():
 
 # custom training loop:
 
-from torch.utils.data import DataLoader
 
 tokenized_datasets.set_format("torch")
 train_dataloader = DataLoader(
@@ -168,9 +171,6 @@ def postprocess(predictions, labels):
     decoded_labels = [[label.strip()] for label in decoded_labels]
     return decoded_preds, decoded_labels
 
-
-import torch
-from tqdm.auto import tqdm
 
 progress_bar = tqdm(range(num_training_steps))
 

@@ -1,20 +1,7 @@
 import torch
 import typer
 from datasets import load_dataset
-from torch.utils.data import DataLoader
-from transformers import (
-    AutoModelForSeq2SeqLM,
-    AutoTokenizer,
-    BartForConditionalGeneration,
-    DataCollatorForSeq2Seq,
-    DefaultDataCollator,
-    RagRetriever,
-    RagTokenForGeneration,
-    RagTokenizer,
-    Seq2SeqTrainer,
-    Seq2SeqTrainingArguments,
-)
-from typing_extensions import Annotated
+from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 
 from ragtime.device import get_device
 
@@ -174,7 +161,7 @@ def main():
             break
     return
 
-    model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
+    # model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
 
     # print("loading retriever...")
     # retriever = RagRetriever.from_pretrained(
@@ -186,34 +173,34 @@ def main():
     # )
     # print(model)
 
-    collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+    # collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
-    args = Seq2SeqTrainingArguments(
-        "training_ragtime",
-        evaluation_strategy="no",
-        save_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
-        weight_decay=0.01,
-        save_total_limit=3,
-        num_train_epochs=3,
-        predict_with_generate=True,
-        fp16=False,
-    )
+    # args = Seq2SeqTrainingArguments(
+    #     "training_ragtime",
+    #     evaluation_strategy="no",
+    #     save_strategy="epoch",
+    #     learning_rate=2e-5,
+    #     per_device_train_batch_size=8,
+    #     per_device_eval_batch_size=8,
+    #     weight_decay=0.01,
+    #     save_total_limit=3,
+    #     num_train_epochs=3,
+    #     predict_with_generate=True,
+    #     fp16=False,
+    # )
 
-    trainer = Seq2SeqTrainer(
-        model,
-        args,
-        train_dataset=tokenized_data["train"],
-        eval_dataset=tokenized_data["test"],
-        data_collator=collator,
-        tokenizer=tokenizer,
-        # compute_metrics=compute_metrics,
-    )
-    trainer.evaluate(max_length=MAX_LENGTH)
-    trainer.train()
+    # trainer = Seq2SeqTrainer(
+    #     model,
+    #     args,
+    #     train_dataset=tokenized_data["train"],
+    #     eval_dataset=tokenized_data["test"],
+    #     data_collator=collator,
+    #     tokenizer=tokenizer,
+    #     # compute_metrics=compute_metrics,
+    # )
     # trainer.evaluate(max_length=MAX_LENGTH)
+    # trainer.train()
+    # # trainer.evaluate(max_length=MAX_LENGTH)
 
 
 if __name__ == "__main__":
