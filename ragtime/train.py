@@ -91,9 +91,9 @@ def main():
             batch = tokenizer.prepare_seq2seq_batch(
                 batch["query"], answers, return_tensors="pt"
             )
-            print(batch)
-            result = model(*batch)
-            print(result)
+            # print(batch)
+            # result = model(*batch)
+            # print(result)
 
             # 1. Encode
             print("encoding...")
