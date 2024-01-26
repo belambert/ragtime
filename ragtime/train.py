@@ -93,7 +93,11 @@ def main():
                 batch["query"], answers, return_tensors="pt"
             )
 
-            print(tokenizer.question_encoder.batch_decode(batch["input_ids"], skip_special_tokens=True))
+            print(
+                tokenizer.question_encoder.batch_decode(
+                    batch["input_ids"], skip_special_tokens=True
+                )
+            )
             # print(tokenizer.question_encoder.batch_decode(batch, skip_special_tokens=True))
             # print(batch)
             # result = model(*batch)
@@ -106,7 +110,9 @@ def main():
             # 2a. Retrieve the docs
             print("retrieving...")
             docs_dict = retriever(
-                batch["input_ids"].numpy(), question_hidden_states.detach().numpy(), return_tensors="pt"
+                batch["input_ids"].numpy(),
+                question_hidden_states.detach().numpy(),
+                return_tensors="pt"
                 # batch["input_ids"].numpy(), question_hidden_states.numpy(), return_tensors="pt"
             )
             # keys of docs_dict are: dict_keys(['context_input_ids',
@@ -123,15 +129,24 @@ def main():
             #     _print_docs(docs_dict, doc_scores, dataset)
 
             # 3. generate
-            generated = model.generate(
-                context_input_ids=docs_dict[
-                    "context_input_ids"
-                ],  # the text of the retrieved docs
+            # generated = model.generate(
+            #     context_input_ids=docs_dict[
+            #         "context_input_ids"
+            #     ],  # the text of the retrieved docs
+            #     context_attention_mask=docs_dict["context_attention_mask"],
+            #     doc_scores=doc_scores,
+            #     return_dict_in_generate=True,
+            #     return_dict=True
+            # )
+
+            generated = model(
+                context_input_ids=docs_dict["context_input_ids"],
                 context_attention_mask=docs_dict["context_attention_mask"],
                 doc_scores=doc_scores,
                 return_dict_in_generate=True,
-                return_dict=True
+                return_dict=True,
             )
+
             print(generated)
             print(tokenizer.batch_decode(generated, skip_special_tokens=True))
 
