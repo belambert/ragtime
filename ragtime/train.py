@@ -93,7 +93,7 @@ def main():
                 batch["query"], answers, return_tensors="pt"
             )
 
-            print(tokenizer.batch_decode(batch["input_ids"], skip_special_tokens=True))
+            print(tokenizer.question_encoder.batch_decode(batch["input_ids"], skip_special_tokens=True))
             # print(batch)
             # result = model(*batch)
             # print(result)
