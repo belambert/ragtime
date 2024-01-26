@@ -101,8 +101,8 @@ def main():
 
             # 1. Encode
             print("encoding...")
-            # question_hidden_states = model.question_encoder(batch["input_ids"])[0]
-            question_hidden_states = model.question_encoder(batch)[0]
+            question_hidden_states = model.question_encoder(batch["input_ids"])[0]
+            # question_hidden_states = model.question_encoder(batch)[0]
             # 2a. Retrieve the docs
             print("retrieving...")
             docs_dict = retriever(
