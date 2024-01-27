@@ -4,7 +4,7 @@ from transformers import RagRetriever
 
 def main():
     """
-    save the index and dataset to their own folders
+    Save the index and dataset to their own folders.
     """
     retriever = RagRetriever.from_pretrained(
         "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
