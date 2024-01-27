@@ -42,8 +42,6 @@ def main():
     model.train()
     model.context_encoder_training = True
 
-    # tokenizer = AutoTokenizer.from_pretrained("facebook/bart-base")
-
     # v2 is much larger
     dataset = load_dataset("ms_marco", "v1.1")
     # dataset = load_dataset("ms_marco", 'v2.1')
@@ -73,6 +71,7 @@ def main():
     # print(tokenized_data)
 
     for epoch in range(EPOCHS):
+        print(f"epoch: {epoch}")
         # for batch in tokenized_data["train"].iter(4, drop_last_batch=True):
         for batch in dataset["train"].iter(4, drop_last_batch=True):
             # print(batch)
@@ -90,7 +89,6 @@ def main():
             del batch["token_type_ids"]
             print(batch.keys())
             print(model(*batch))
-            return
 
             # print("labels:")
             # print(batch["labels"])
@@ -159,48 +157,6 @@ def main():
             # # print(torch.tensor(batch["input_ids"]))
             # print(collator(batch))
             break
-    return
-
-    # model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
-
-    # print("loading retriever...")
-    # retriever = RagRetriever.from_pretrained(
-    #     "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
-    # )
-    # print("loading model...")
-    # model = RagTokenForGeneration.from_pretrained(
-    #     "facebook/rag-token-nq", retriever=retriever
-    # )
-    # print(model)
-
-    # collator = DataCollatorForSeq2Seq(tokenizer, model=model)
-
-    # args = Seq2SeqTrainingArguments(
-    #     "training_ragtime",
-    #     evaluation_strategy="no",
-    #     save_strategy="epoch",
-    #     learning_rate=2e-5,
-    #     per_device_train_batch_size=8,
-    #     per_device_eval_batch_size=8,
-    #     weight_decay=0.01,
-    #     save_total_limit=3,
-    #     num_train_epochs=3,
-    #     predict_with_generate=True,
-    #     fp16=False,
-    # )
-
-    # trainer = Seq2SeqTrainer(
-    #     model,
-    #     args,
-    #     train_dataset=tokenized_data["train"],
-    #     eval_dataset=tokenized_data["test"],
-    #     data_collator=collator,
-    #     tokenizer=tokenizer,
-    #     # compute_metrics=compute_metrics,
-    # )
-    # trainer.evaluate(max_length=MAX_LENGTH)
-    # trainer.train()
-    # # trainer.evaluate(max_length=MAX_LENGTH)
 
 
 if __name__ == "__main__":

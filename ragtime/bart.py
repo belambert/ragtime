@@ -16,7 +16,8 @@ def main():
 
     # inputs = tokenizer([ARTICLE_TO_SUMMARIZE], max_length=1024, return_tensors="pt")
     # summary_ids = model.generate(inputs["input_ids"], num_beams=2, min_length=0, max_length=20)
-    # gen = tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    # gen = tokenizer.batch_decode(summary_ids, skip_special_tokens=True,
+    #                              clean_up_tokenization_spaces=False)[0]
     # print(gen)
 
     dataset = load_dataset("ms_marco", "v1.1")
@@ -66,11 +67,11 @@ def main():
         tokenizer=tokenizer,
         # compute_metrics=compute_metrics,
     )
-    eval = trainer.evaluate(max_length=MAX_LENGTH)
-    print(eval)
+    eval_ = trainer.evaluate(max_length=MAX_LENGTH)
+    print(eval_)
     trainer.train()
-    eval = trainer.evaluate(max_length=MAX_LENGTH)
-    print(eval)
+    eval_ = trainer.evaluate(max_length=MAX_LENGTH)
+    print(eval_)
 
 
 if __name__ == "__main__":
