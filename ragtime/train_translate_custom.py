@@ -1,7 +1,7 @@
-# custom training loop:
 import evaluate
 import numpy as np
 import torch
+import typer
 from accelerate import Accelerator
 from datasets import load_dataset
 from torch.utils.data import DataLoader
@@ -13,6 +13,7 @@ from transformers import (
     DataCollatorForSeq2Seq,
     get_scheduler,
 )
+from typing_extensions import Annotated
 
 # from: https://huggingface.co/learn/nlp-course/chapter7/4?fw=pt
 
@@ -22,11 +23,12 @@ METRIC = evaluate.load("sacrebleu")
 
 
 # pylint: disable-next=too-many-locals, too-many-statements
-def main():
+def main(debug: Annotated[bool, typer.Option()] = False):
     raw_dataset = load_dataset("kde4", lang1="en", lang2="fr", trust_remote_code=True)
     dataset = raw_dataset["train"].train_test_split(train_size=0.9, seed=20)
-    dataset["train"] = dataset["train"].select(range(100))
-    dataset["test"] = dataset["test"].select(range(100))
+    if debug:
+        dataset["train"] = dataset["train"].select(range(100))
+        dataset["test"] = dataset["test"].select(range(100))
     tokenizer = AutoTokenizer.from_pretrained(MODEL, return_tensors="pt")
     model = AutoModelForSeq2SeqLM.from_pretrained(MODEL)
     collator = DataCollatorForSeq2Seq(tokenizer, model=model)
@@ -152,4 +154,4 @@ def main():
 # translator("Default to expanded threads")
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
