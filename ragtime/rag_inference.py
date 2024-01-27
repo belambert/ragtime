@@ -23,18 +23,19 @@ def main(query: Annotated[str, typer.Argument()]):
 
     print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained(
-        "facebook/rag-token-nq", cache_dir="/mnt/disks/data"
+        "facebook/rag-token-nq",
     )
     print("loading retriever...")
     retriever = RagRetriever.from_pretrained(
         "facebook/rag-token-nq",
-        dataset="wiki_dpr",
-        index_name="compressed",
-        cache_dir="/mnt/disks/data",
+        index_name="custom",
+        passages_path="/mnt/disks/data/wiki_dpr",
+        index_path="/mnt/disks/data/wiki_dpr.faiss",
     )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
-        "facebook/rag-token-nq", retriever=retriever, cache_dir="/mnt/disks/data"
+        "facebook/rag-token-nq",
+        retriever=retriever,
     )
     print("preparing input...")
     # need to understand what this does...
