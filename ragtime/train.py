@@ -1,12 +1,6 @@
 import typer
 from datasets import load_dataset
-from torch.utils.data import DataLoader
-from transformers import (
-    DataCollatorForSeq2Seq,
-    RagRetriever,
-    RagTokenForGeneration,
-    RagTokenizer,
-)
+from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
 
 from ragtime.device import get_device
@@ -23,22 +17,6 @@ from ragtime.device import get_device
 
 MAX_LENGTH = 128
 EPOCHS = 1
-CACHE_DIR = "/mnt/disks/data"  # ?
-
-
-# this might help me load the index off of a read only volume
-# >>> # To load your own indexed dataset built with the datasets
-# >>> library that was saved on disk. More info in examples/rag/use_own_knowledge_dataset.py
-# >>> from transformers import RagRetriever
-# >>> dataset_path = "path/to/my/dataset"  # dataset saved via *dataset.save_to_disk(...)*
-# >>> index_path = "path/to/my/index.faiss"  # faiss index saved via
-# *dataset.get_index("embeddings").save(...)*
-# >>> retriever = RagRetriever.from_pretrained(
-# ...     "facebook/dpr-ctx_encoder-single-nq-base",
-# ...     index_name="custom",
-# ...     passages_path=dataset_path,
-# ...     index_path=index_path,
-# ... )
 
 
 def main(debug: Annotated[bool, typer.Option()] = False):
@@ -62,6 +40,7 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq", retriever=retriever
     )
+    print(model)
 
     dataset = load_dataset("ms_marco", "v1.1")
     if debug:
@@ -69,8 +48,6 @@ def main(debug: Annotated[bool, typer.Option()] = False):
         dataset["test"] = dataset["test"].select(range(100))
         dataset["validation"] = dataset["validation"].select(range(100))
     print(dataset)
-
-    collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
     def preprocess(examples):
         inputs = examples["query"]
@@ -88,25 +65,21 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     )
     tokenized_dataset.set_format("torch")
 
-    # the dataloader isn't working though.
-    train_dataloader = DataLoader(
-        tokenized_dataset["train"],
-        shuffle=True,
-        collate_fn=collator,
-        batch_size=8,
-    )
-    # eval_dataloader = DataLoader(
-    #     tokenized_dataset["test"], collate_fn=collator, batch_size=8
-    # )
+    print(tokenized_dataset)
+    print(tokenized_dataset[0])
 
-    for epoch in range(EPOCHS):
-        print(f"epoch: {epoch}")
-        # Training
-        model.train()
-        for i, batch in enumerate(train_dataloader):
-            print(f"batch: {i}")
-            output = model(**batch)
-            print(output.loss)
+    for i, batch in tokenized_dataset["train"].iter(4, drop_last_batch=True):
+        print(i)
+        print(batch)
+
+    # for epoch in range(EPOCHS):
+    #     print(f"epoch: {epoch}")
+    #     # Training
+    #     model.train()
+    #     for i, batch in enumerate(train_dataloader):
+    #         print(f"batch: {i}")
+    #         output = model(**batch)
+    #         print(output.loss)
 
     # for epoch in range(EPOCHS):
     #     print(f"epoch: {epoch}")
