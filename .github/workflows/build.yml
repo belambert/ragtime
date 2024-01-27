@@ -5,32 +5,30 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    types: [ labeled ]
 
 env:
   REGION: us
 
 jobs:
   docker_build:
+    # only build if the tag is "build" or it's a push
+    if: ${{ github.event_name == 'push' || github.event.label.name == 'build' }}
     runs-on: ubuntu-latest
     steps:
       - uses: "actions/checkout@v4"
-
       - id: "auth"
         uses: "google-github-actions/auth@v2"
         with:
           credentials_json: "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
-
       - name: "setup GCP SDK"
         uses: "google-github-actions/setup-gcloud@v2"
-
       - name: "use gcloud cli"
         run: "gcloud info"
-
       - name: "setup docker auth"
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
-
       - name: docker build
         run: make dockerbuild
-
       - name: docker push
         run: make dockerpush
