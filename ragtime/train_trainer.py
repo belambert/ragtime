@@ -21,35 +21,31 @@ from ragtime.device import get_device
 # https://shamanesiri.medium.com/how-to-finetune-the-entire-rag-architecture-including-dpr-retriever-4b4385322552
 # https://github.com/huggingface/transformers/blob/main/examples/research_projects/rag/finetune_rag.py
 
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.INFO)
-
-
-# and:
-# https://towardsdatascience.com/how-to-fine-tune-a-q-a-transformer-86f91ec92997
-# https://stackoverflow.com/questions/75854700/how-to-fine-tune-a-huggingface-seq2seq-model-with-a-dataset-from-the-hub
 
 MAX_LENGTH = 128
 EPOCHS = 1
+
+# most recent error with this is:
+# AttributeError: 'RagTokenizer' object has no attribute 'padding_side'
 
 
 def main(debug: Annotated[bool, typer.Option()] = False):
     device = get_device()
     print(device)
     print("loading tokenizer...")
-    tokenizer = RagTokenizer.from_pretrained(
-        "facebook/rag-token-nq", cache_dir="/mnt/disks/data"
-    )
+    tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
-    retriever = RagRetriever.from_pretrained(
-        "facebook/rag-token-nq",
-        dataset="wiki_dpr",
-        index_name="compressed",
-        cache_dir="/mnt/disks/data",
-    )
+    if debug:
+        retriever = RagRetriever.from_pretrained(
+            "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
+        )
+    else:
+        retriever = RagRetriever.from_pretrained(
+            "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+        )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
-        "facebook/rag-token-nq", retriever=retriever, cache_dir="/mnt/disks/data"
+        "facebook/rag-token-nq", retriever=retriever
     )
 
     dataset = load_dataset("ms_marco", "v1.1")
