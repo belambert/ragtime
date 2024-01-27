@@ -66,7 +66,7 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     tokenized_dataset.set_format("torch")
 
     print(tokenized_dataset)
-    print(tokenized_dataset[0])
+    print(tokenized_dataset["train"][0])
 
     for i, batch in tokenized_dataset["train"].iter(4, drop_last_batch=True):
         print(i)

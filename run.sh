@@ -11,7 +11,7 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
         "computeResource": {
           "cpuMilli": "8000",
           "memoryMib": "16000",
-          "bootDiskMib": "10000"
+          "bootDiskMib": "20000"
         },
         "runnables": [
           {
