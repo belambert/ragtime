@@ -2,6 +2,7 @@ import torch
 import typer
 from datasets import load_dataset
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
+from typing_extensions import Annotated
 
 from ragtime.device import get_device
 
@@ -26,28 +27,32 @@ MAX_LENGTH = 128
 EPOCHS = 1
 
 
-def main():
+def main(debug: Annotated[bool, typer.Option()] = False):
     device = get_device()
     print(device)
     print("loading tokenizer...")
-    tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
+    tokenizer = RagTokenizer.from_pretrained(
+        "facebook/rag-token-nq", cache_dir="/mnt/disks/data"
+    )
     print("loading retriever...")
     retriever = RagRetriever.from_pretrained(
-        "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+        "facebook/rag-token-nq",
+        dataset="wiki_dpr",
+        index_name="compressed",
+        cache_dir="/mnt/disks/data",
     )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
-        "facebook/rag-token-nq", retriever=retriever
+        "facebook/rag-token-nq", retriever=retriever, cache_dir="/mnt/disks/data"
     )
     model.train()
     model.context_encoder_training = True
 
-    # v2 is much larger
     dataset = load_dataset("ms_marco", "v1.1")
-    # dataset = load_dataset("ms_marco", 'v2.1')
-    dataset["train"] = dataset["train"].select(range(100))
-    dataset["test"] = dataset["test"].select(range(100))
-    dataset["validation"] = dataset["validation"].select(range(100))
+    if debug:
+        dataset["train"] = dataset["train"].select(range(100))
+        dataset["test"] = dataset["test"].select(range(100))
+        dataset["validation"] = dataset["validation"].select(range(100))
     print(dataset)
 
     # def preprocess(examples):

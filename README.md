@@ -1,4 +1,11 @@
 
+At some point try v2 of the dataset
+```
+# v2 is much larger
+dataset = load_dataset("ms_marco", "v1.1")
+# dataset = load_dataset("ms_marco", 'v2.1')
+```
+
 [Original RAG paper](https://arxiv.org/pdf/2005.11401.pdf)
 
 [Who cites RAG?](https://www.semanticscholar.org/paper/Retrieval-Augmented-Generation-for-NLP-Tasks-Lewis-Perez/58ed1fbaabe027345f7bb3a6312d41c5aac63e22#citing-papers)
