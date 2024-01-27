@@ -11,14 +11,18 @@ ENV WANDB_API_KEY=934436ad14ceb55b75a7917bc289ec0ac28246e2 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache \
     DEBIAN_FRONTEND=noninteractive
-#    HF_HOME=/mnt/disks/data
 
 RUN apt update && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:graphics-drivers && \
     apt install nvidia-driver-535 -y && \
-    apt install python3.11 python3-pip -y
+    apt install python3.11 python3-pip -y && \
+    apt-get autoremove --yes && \
+    rm -rf /var/lib/apt/lists/*
+    # apt-get install --yes --no-install-recommends build-essential && \
+    # poetry install --only main --no-root && \
+    # apt-get purge --yes build-essential && \
 
 RUN pip install poetry==1.7.1
-RUN poetry install
+RUN poetry install --without dev && rm -rf $POETRY_CACHE_DIR
 CMD ["poetry", "run", "python", "ragtime/train.py"]
