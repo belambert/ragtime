@@ -2,6 +2,7 @@ import warnings
 
 import evaluate
 import numpy as np
+import typer
 from datasets import load_dataset
 from transformers import (
     AutoModelForSeq2SeqLM,
@@ -10,6 +11,7 @@ from transformers import (
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
 )
+from typing_extensions import Annotated
 
 # from: https://huggingface.co/learn/nlp-course/chapter7/4?fw=pt
 
@@ -26,11 +28,12 @@ MAX_LENGTH = 128
 METRIC = evaluate.load("sacrebleu")
 
 
-def main():
+def main(debug: Annotated[bool, typer.Option()] = False):
     raw_dataset = load_dataset("kde4", lang1="en", lang2="fr", trust_remote_code=True)
     dataset = raw_dataset["train"].train_test_split(train_size=0.9, seed=20)
-    dataset["train"] = dataset["train"].select(range(100))
-    dataset["test"] = dataset["test"].select(range(100))
+    if debug:
+        dataset["train"] = dataset["train"].select(range(100))
+        dataset["test"] = dataset["test"].select(range(100))
     print(dataset)
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL, return_tensors="pt")
@@ -129,4 +132,4 @@ def check_tokenizer(dataset, tokenizer):
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
