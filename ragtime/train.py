@@ -53,7 +53,10 @@ def main(debug: Annotated[bool, typer.Option()] = False):
         )
     else:
         retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
+            "facebook/rag-token-nq",
+            index_name="custom",
+            passages_path="/mnt/disks/data/wiki_dpr",
+            index_path="/mnt/disks/data/wiki_dpr.faiss",
         )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(

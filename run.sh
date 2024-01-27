@@ -29,8 +29,7 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
         "volumes": [
            {
              "deviceName": "wiki-dpr",
-             "mountPath": "/mnt/disks/data",
-             "mountOptions": "rw,async"
+             "mountPath": "/mnt/disks/data"
            }
          ]
       }
