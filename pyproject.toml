@@ -49,6 +49,9 @@ skip_gitignore = true
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.mypy]
+check_untyped_defs = true
+
 [[tool.mypy.overrides]]
 module = [
     "accelerate.*",
@@ -58,6 +61,9 @@ module = [
     "transformers.*",
 ]
 ignore_missing_imports = true
+
+[tool.pylint.reports]
+score = false
 
 [tool.pylint."messages control"]
 disable = [
