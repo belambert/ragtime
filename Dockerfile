@@ -11,7 +11,7 @@ ENV WANDB_API_KEY=934436ad14ceb55b75a7917bc289ec0ac28246e2 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache \
     DEBIAN_FRONTEND=noninteractive \
-    HF_HOME=/mnt/disks/data
+#    HF_HOME=/mnt/disks/data
 
 RUN apt update && \
     apt install software-properties-common -y && \
