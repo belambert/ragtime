@@ -17,22 +17,15 @@ from ragtime.device import get_device
 
 
 MAX_LENGTH = 128
-EPOCHS = 1
+EPOCHS = 10
 
 
 def main(debug: Annotated[bool, typer.Option()] = False):
     device = get_device()
     print(device)
-    # pylint: disable-next=unused-variable
-    tokenizer, retriever, model = load_model(debug)
+    tokenizer, model = load_model(debug)
     # tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     dataset = load_ms_marco(debug)
-
-    # answers = [x[0] for x in dataset["train"][0:2]["answers"]]
-    # batch0 = tokenizer.prepare_seq2seq_batch(
-    #     dataset["train"][0:2]["query"], answers, return_tensors="pt"
-    # )
-    # print(batch0)
 
     tokenized_dataset = dataset.map(
         get_preproc_function(tokenizer),
@@ -46,32 +39,25 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
 
     print("beginning loop...")
-    for i, batch in enumerate(data_iter):
-        print(f"batch #{i}")
-        pad_batch(batch)
-        output = model(**batch)
-        print(output.loss)
+    for _ in range(EPOCHS):
+        for i, batch in enumerate(data_iter):
+            print(f"batch #{i}")
+            pad_batch(batch)
+            output = model(**batch)
+            print_batch(tokenizer, batch, output)
 
-    # for epoch in range(EPOCHS):
-    #     print(f"epoch: {epoch}")
-    #     # for batch in tokenized_data["train"].iter(4, drop_last_batch=True):
-    #     for batch in dataset["train"].iter(4, drop_last_batch=True):
-    #         # print(batch)
-    #         print("\n".join(batch["query"]))
-    #         answers = list(map(lambda x: x[0], batch["answers"]))
-    #         batch = tokenizer.prepare_seq2seq_batch(
-    #             batch["query"], answers, return_tensors="pt"
-    #         )
-    #         print(batch)
-    #         print(
-    #             tokenizer.question_encoder.batch_decode(
-    #                 batch["input_ids"], skip_special_tokens=True
-    #             )
-    #         )
-    #         result = model(**batch)
-    #         print(result.loss)
-    #         # next thing is to do the weight update...
-    #         break
+
+def print_batch(tokenizer, batch, output):
+    questions = tokenizer.question_encoder.batch_decode(
+        batch["input_ids"], skip_special_tokens=True
+    )
+    answers = tokenizer.question_encoder.batch_decode(
+        batch["labels"], skip_special_tokens=True
+    )
+    for q, a, loss in zip(questions, answers, output.loss):
+        # for q, a, loss in zip(questions, answers, [0,0,0,0]):
+        print(f"Q: {q}")
+        print(f"A: {a} ({loss})")
 
 
 def load_model(debug: bool = False):
@@ -93,17 +79,16 @@ def load_model(debug: bool = False):
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq", retriever=retriever
     )
-    print(model)
-    return tokenizer, retriever, model
+    return tokenizer, model
 
 
 def load_ms_marco(debug: bool = False) -> Dataset:
     dataset = load_dataset("ms_marco", "v1.1")
     # dataset = load_dataset("ms_marco", "v2.1")
     if debug:
-        dataset["train"] = dataset["train"].select(range(100))
-        dataset["test"] = dataset["test"].select(range(100))
-        dataset["validation"] = dataset["validation"].select(range(100))
+        dataset["train"] = dataset["train"].select(range(4))
+        dataset["test"] = dataset["test"].select(range(4))
+        dataset["validation"] = dataset["validation"].select(range(4))
     print(dataset)
     return dataset
 
