@@ -28,6 +28,12 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     # tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     dataset = load_ms_marco(debug)
 
+    # answers = [x[0] for x in dataset["train"][0:2]["answers"]]
+    # batch0 = tokenizer.prepare_seq2seq_batch(
+    #     dataset["train"][0:2]["query"], answers, return_tensors="pt"
+    # )
+    # print(batch0)
+
     tokenized_dataset = dataset.map(
         get_preproc_function(tokenizer),
         batched=True,
@@ -36,18 +42,13 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     )
     tokenized_dataset.set_format("torch")
 
-    print(tokenized_dataset)
-    # print(tokenized_dataset["train"][0])
-
     print("getting iterator...")
     data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
 
     print("beginning loop...")
     for i, batch in enumerate(data_iter):
         print(f"batch #{i}")
-        print(batch)
         pad_batch(batch)
-        print(batch)
         output = model(**batch)
         print(output.loss)
 
@@ -107,7 +108,6 @@ def load_ms_marco(debug: bool = False) -> Dataset:
     return dataset
 
 
-# is this right?
 def get_preproc_function(tokenizer):
     def preprocess(examples):
         inputs = examples["query"]
@@ -121,8 +121,8 @@ def get_preproc_function(tokenizer):
 
 
 def pad_batch(batch) -> None:
-    batch["input_ids"] = pad_vectors(batch["input_ids"], -100)
-    batch["labels"] = pad_vectors(batch["labels"], -100)
+    batch["input_ids"] = pad_vectors(batch["input_ids"], 0)
+    batch["labels"] = pad_vectors(batch["labels"], 0)
     batch["attention_mask"] = pad_vectors(batch["attention_mask"], 0)
     batch["token_type_ids"] = pad_vectors(batch["token_type_ids"], 0)
 
