@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import Callable
 
 import torch
@@ -56,10 +57,8 @@ def main(
         num_proc=8,
     )
     tok_data.set_format("torch")
-    print(model.generator.parameters())
-    print(model.question_encoder.parameters())
-    # optimizer = torch.optim.AdamW(model.question_encoder.parameters(), lr=LR)
-    optimizer = torch.optim.AdamW(model.generator.parameters(), lr=lr)
+    params = chain(model.generator.parameters(), model.question_encoder.parameters())
+    optimizer = torch.optim.AdamW(params, lr=lr)
 
     print("begin training loop...")
     for epoch in range(epochs):
@@ -77,6 +76,7 @@ def main(
             batch_loss.backward()
             optimizer.step()
             epoch_loss += batch_loss.item()
+            del batch
         metrics = {"loss": epoch_loss}
         print(metrics)
         if run:
