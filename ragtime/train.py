@@ -12,7 +12,7 @@ from transformers import (
     RagTokenForGeneration,
     RagTokenizer,
 )
-from transformers.modeling_outputs import Seq2SeqModelOutput
+from transformers.modeling_outputs import ModelOutput
 from typing_extensions import Annotated
 
 from ragtime.device import get_device
@@ -38,6 +38,7 @@ def main(
     batch_size: Annotated[int, typer.Option(help="batch size")] = 4,
     wandb: Annotated[bool, typer.Option(help="use wandb")] = False,
 ):
+    """Fine-tune a RAG model with the MS MARCO dataset."""
     run = wb.init(project="ragtime", mode="online" if wandb else "disabled")
     wb.config.learning_rate = lr
     wb.config.batch_size = batch_size
@@ -48,13 +49,13 @@ def main(
     # tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     dataset = load_ms_marco(debug)
 
-    tok_datat = dataset.map(
+    tok_data = dataset.map(
         get_preproc_function(tokenizer),
         batched=True,
         remove_columns=dataset["train"].column_names,
         num_proc=8,
     )
-    tok_datat.set_format("torch")
+    tok_data.set_format("torch")
     print(model.generator.parameters())
     print(model.question_encoder.parameters())
     # optimizer = torch.optim.AdamW(model.question_encoder.parameters(), lr=LR)
@@ -64,26 +65,29 @@ def main(
     for epoch in range(epochs):
         print(f"Epoch: {epoch}")
         epoch_loss = 0
-        data_iter = tok_datat["train"].iter(batch_size, drop_last_batch=True)
+        model.train()
+        data_iter = tok_data["train"].iter(batch_size, drop_last_batch=True)
         for i, batch in enumerate(data_iter):
-            print(f"batch #{i}")
             pad_batch(batch)
             optimizer.zero_grad()
             output = model(**batch)
-            print_batch(tokenizer, batch, output)
+            if i == 0:
+                print_batch(tokenizer, batch, output)
             batch_loss = output.loss.sum()
             batch_loss.backward()
             optimizer.step()
-            epoch_loss += batch_loss
+            epoch_loss += batch_loss.item()
         metrics = {"loss": epoch_loss}
+        print(metrics)
         if run:
             run.log(metrics)
     print("finished training")
 
 
 def print_batch(
-    tokenizer: RagTokenizer, batch: BatchEncoding, output: Seq2SeqModelOutput
+    tokenizer: RagTokenizer, batch: BatchEncoding, output: ModelOutput
 ) -> None:
+    """Decode and print the inputs and outputs of a batch, and the loss"""
     questions = tokenizer.question_encoder.batch_decode(
         batch["input_ids"], skip_special_tokens=True
     )
@@ -96,6 +100,7 @@ def print_batch(
 
 
 def load_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
+    """Load the RAG model. If debug=True, use the dummy dataset."""
     print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
@@ -118,17 +123,20 @@ def load_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
 
 
 def load_ms_marco(debug: bool = False) -> Dataset:
+    """Load the MS-MARCO dataset. If debug=True, select a tiny subset."""
     dataset = load_dataset("ms_marco", "v1.1")
     # dataset = load_dataset("ms_marco", "v2.1")
     if debug:
-        dataset["train"] = dataset["train"].select(range(4))
-        dataset["test"] = dataset["test"].select(range(4))
-        dataset["validation"] = dataset["validation"].select(range(4))
+        dataset["train"] = dataset["train"].select(range(100))
+        dataset["test"] = dataset["test"].select(range(100))
+        dataset["validation"] = dataset["validation"].select(range(100))
     print(dataset)
     return dataset
 
 
 def get_preproc_function(tokenizer: RagTokenizer) -> Callable[[Dataset], BatchEncoding]:
+    """Get the preprocessing function that will tokenize Dataset objects"""
+
     def preprocess(examples: Dataset) -> BatchEncoding:
         inputs = examples["query"]
         targets = [ex[0] if len(ex) > 0 else " " for ex in examples["answers"]]
@@ -140,8 +148,8 @@ def get_preproc_function(tokenizer: RagTokenizer) -> Callable[[Dataset], BatchEn
     return preprocess
 
 
-# def pad_batch(batch: dict[str, Tensor]) -> None:
 def pad_batch(batch: BatchEncoding) -> None:
+    """Given a seq2seq batch encoding, pad it in place."""
     batch["input_ids"] = pad_vectors(batch["input_ids"], 0)
     batch["labels"] = pad_vectors(batch["labels"], 0)
     batch["attention_mask"] = pad_vectors(batch["attention_mask"], 0)
@@ -149,9 +157,7 @@ def pad_batch(batch: BatchEncoding) -> None:
 
 
 def pad_vectors(vectors: list[Tensor], pad: int) -> Tensor:
-    """
-    Given a list of vector tensors, pad them to the same length and stack them.
-    """
+    """Given a list of vector tensors, pad them to the same length and stack them."""
     assert all(map(lambda x: len(x.shape) == 1, vectors))
     max_len = max(map(lambda x: x.shape[0], vectors))
     padded = map(lambda x: pad_vector(x, max_len, pad), vectors)
@@ -159,9 +165,7 @@ def pad_vectors(vectors: list[Tensor], pad: int) -> Tensor:
 
 
 def pad_vector(vector: Tensor, length: int, pad: int) -> Tensor:
-    """
-    Given a vector tensor, extend it to the given length using `pad`.
-    """
+    """Given a vector tensor, extend it to the given length using `pad`."""
     # pylint: disable-next=not-callable
     return torch.nn.functional.pad(vector, (0, length - len(vector)), value=pad)
 
