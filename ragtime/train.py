@@ -17,13 +17,14 @@ from ragtime.device import get_device
 
 
 MAX_LENGTH = 128
-EPOCHS = 10
+EPOCHS = 100
+LR = 0.001
 
 
 def main(debug: Annotated[bool, typer.Option()] = False):
     device = get_device()
     print(device)
-    tokenizer, model = load_model(debug)
+    tokenizer, model = load_model(False)
     # tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     dataset = load_ms_marco(debug)
 
@@ -34,17 +35,22 @@ def main(debug: Annotated[bool, typer.Option()] = False):
         num_proc=8,
     )
     tokenized_dataset.set_format("torch")
-
-    print("getting iterator...")
-    data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
+    print(model.generator.parameters())
+    print(model.question_encoder.parameters())
+    # optimizer = torch.optim.AdamW(model.question_encoder.parameters(), lr=LR)
+    optimizer = torch.optim.AdamW(model.generator.parameters(), lr=LR)
 
     print("beginning loop...")
     for _ in range(EPOCHS):
+        data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
         for i, batch in enumerate(data_iter):
             print(f"batch #{i}")
             pad_batch(batch)
+            optimizer.zero_grad()
             output = model(**batch)
             print_batch(tokenizer, batch, output)
+            output.loss.backward()
+            optimizer.step()
 
 
 def print_batch(tokenizer, batch, output):
@@ -55,27 +61,25 @@ def print_batch(tokenizer, batch, output):
         batch["labels"], skip_special_tokens=True
     )
     for q, a, loss in zip(questions, answers, output.loss):
-        # for q, a, loss in zip(questions, answers, [0,0,0,0]):
         print(f"Q: {q}")
-        print(f"A: {a} ({loss})")
+        print(f"A: [{loss}] {a} ")
 
 
-# pylint: disable-next=unused-argument
 def load_model(debug: bool = False):
     print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
-    # if debug:
-    #     retriever = RagRetriever.from_pretrained(
-    #         "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
-    #     )
-    # else:
-    retriever = RagRetriever.from_pretrained(
-        "facebook/rag-token-nq",
-        index_name="custom",
-        passages_path="/mnt/disks/data/wiki_dpr",
-        index_path="/mnt/disks/data/wiki_dpr.faiss",
-    )
+    if debug:
+        retriever = RagRetriever.from_pretrained(
+            "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
+        )
+    else:
+        retriever = RagRetriever.from_pretrained(
+            "facebook/rag-token-nq",
+            index_name="custom",
+            passages_path="/mnt/disks/data/wiki_dpr",
+            index_path="/mnt/disks/data/wiki_dpr.faiss",
+        )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq", retriever=retriever
