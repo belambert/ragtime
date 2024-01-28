@@ -1,7 +1,17 @@
+from typing import Callable
+
 import torch
 import typer
 from datasets import Dataset, load_dataset
-from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
+from torch import Tensor
+from transformers import (
+    BatchEncoding,
+    RagModel,
+    RagRetriever,
+    RagTokenForGeneration,
+    RagTokenizer,
+)
+from transformers.modeling_outputs import Seq2SeqModelOutput
 from typing_extensions import Annotated
 
 from ragtime.device import get_device
@@ -21,7 +31,7 @@ EPOCHS = 100
 LR = 0.001
 
 
-def main(debug: Annotated[bool, typer.Option()] = False):
+def main(debug: Annotated[bool, typer.Option()] = False) -> None:
     device = get_device()
     print(device)
     tokenizer, model = load_model(False)
@@ -49,11 +59,13 @@ def main(debug: Annotated[bool, typer.Option()] = False):
             optimizer.zero_grad()
             output = model(**batch)
             print_batch(tokenizer, batch, output)
-            output.loss.backward()
+            output.loss.sum(1).backward()
             optimizer.step()
 
 
-def print_batch(tokenizer, batch, output):
+def print_batch(
+    tokenizer: RagTokenizer, batch: BatchEncoding, output: Seq2SeqModelOutput
+) -> None:
     questions = tokenizer.question_encoder.batch_decode(
         batch["input_ids"], skip_special_tokens=True
     )
@@ -65,7 +77,7 @@ def print_batch(tokenizer, batch, output):
         print(f"A: [{loss}] {a} ")
 
 
-def load_model(debug: bool = False):
+def load_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
     print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
@@ -98,8 +110,8 @@ def load_ms_marco(debug: bool = False) -> Dataset:
     return dataset
 
 
-def get_preproc_function(tokenizer):
-    def preprocess(examples):
+def get_preproc_function(tokenizer: RagTokenizer) -> Callable[[Dataset], BatchEncoding]:
+    def preprocess(examples: Dataset) -> BatchEncoding:
         inputs = examples["query"]
         targets = [ex[0] if len(ex) > 0 else " " for ex in examples["answers"]]
         model_inputs = tokenizer(
@@ -110,23 +122,30 @@ def get_preproc_function(tokenizer):
     return preprocess
 
 
-def pad_batch(batch) -> None:
+# def pad_batch(batch: dict[str, Tensor]) -> None:
+def pad_batch(batch: BatchEncoding) -> None:
     batch["input_ids"] = pad_vectors(batch["input_ids"], 0)
     batch["labels"] = pad_vectors(batch["labels"], 0)
     batch["attention_mask"] = pad_vectors(batch["attention_mask"], 0)
     batch["token_type_ids"] = pad_vectors(batch["token_type_ids"], 0)
 
 
-def pad_vectors(vectors: list[torch.Tensor], value) -> torch.Tensor:
+def pad_vectors(vectors: list[Tensor], pad: int) -> Tensor:
+    """
+    Given a list of vector tensors, pad them to the same length and stack them.
+    """
     assert all(map(lambda x: len(x.shape) == 1, vectors))
     max_len = max(map(lambda x: x.shape[0], vectors))
-    padded = map(lambda x: pad_vector(x, max_len, value), vectors)
+    padded = map(lambda x: pad_vector(x, max_len, pad), vectors)
     return torch.stack(tuple(padded))
 
 
-def pad_vector(vector: torch.Tensor, length: int, value) -> torch.Tensor:
+def pad_vector(vector: Tensor, length: int, pad: int) -> Tensor:
+    """
+    Given a vector tensor, extend it to the given length using `pad`.
+    """
     # pylint: disable-next=not-callable
-    return torch.nn.functional.pad(vector, (0, length - len(vector)), value=value)
+    return torch.nn.functional.pad(vector, (0, length - len(vector)), value=pad)
 
 
 if __name__ == "__main__":
