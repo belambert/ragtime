@@ -60,21 +60,22 @@ def print_batch(tokenizer, batch, output):
         print(f"A: {a} ({loss})")
 
 
+# pylint: disable-next=unused-argument
 def load_model(debug: bool = False):
     print("loading tokenizer...")
     tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     print("loading retriever...")
-    if debug:
-        retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
-        )
-    else:
-        retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq",
-            index_name="custom",
-            passages_path="/mnt/disks/data/wiki_dpr",
-            index_path="/mnt/disks/data/wiki_dpr.faiss",
-        )
+    # if debug:
+    #     retriever = RagRetriever.from_pretrained(
+    #         "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
+    #     )
+    # else:
+    retriever = RagRetriever.from_pretrained(
+        "facebook/rag-token-nq",
+        index_name="custom",
+        passages_path="/mnt/disks/data/wiki_dpr",
+        index_path="/mnt/disks/data/wiki_dpr.faiss",
+    )
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq", retriever=retriever
