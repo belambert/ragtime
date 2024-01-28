@@ -24,6 +24,7 @@ def main(query: Annotated[str, typer.Argument()]):
         index_path="/mnt/disks/data/wiki_dpr.faiss",
     )
     dataset = retriever.index.dataset
+    print(dataset)
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq",
@@ -35,19 +36,13 @@ def main(query: Annotated[str, typer.Argument()]):
 
     print("generating...")
     # return RetrievAugLMOutput ?
-    # may have to do forward pass instead?
-    generated = model.generate(input_ids=input_dict["input_ids"], max_new_tokens=20)
-    print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
-    print(type(generated))
-    print(generated)
-    print(dataset)
-    # print(generated.doc_scores)
-    # print(generated.retrieved_doc_ids)
-    result = model(**input_dict)
+    result = model(**input_dict, output_retrieved=True)
     print(result)
-    print(result.doc_scores)
-    print(result.retrieved_doc_ids)
+    print(result.doc_scores)  # these have values
+    print(result.retrieved_doc_ids)  # this is None
     print(result.logits)
+    # get argmax over logits, then decode
+    # print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
 
 
 if __name__ == "__main__":
