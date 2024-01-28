@@ -2,6 +2,7 @@ from typing import Callable
 
 import torch
 import typer
+import wandb as wb
 from datasets import Dataset, load_dataset
 from torch import Tensor
 from transformers import (
@@ -27,40 +28,57 @@ from ragtime.device import get_device
 
 
 MAX_LENGTH = 128
-EPOCHS = 100
-LR = 0.001
 
 
-def main(debug: Annotated[bool, typer.Option()] = False) -> None:
+# pylint: disable-next=too-many-locals
+def main(
+    debug: Annotated[bool, typer.Option(help="use data subset")] = False,
+    epochs: Annotated[int, typer.Option(help="num epochs")] = 100,
+    lr: Annotated[float, typer.Option(help="learning rate")] = 0.001,
+    batch_size: Annotated[int, typer.Option(help="batch size")] = 4,
+    wandb: Annotated[bool, typer.Option(help="use wandb")] = False,
+):
+    run = wb.init(project="ragtime", mode="online" if wandb else "disabled")
+    wb.config.learning_rate = lr
+    wb.config.batch_size = batch_size
+
     device = get_device()
     print(device)
     tokenizer, model = load_model(False)
     # tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
     dataset = load_ms_marco(debug)
 
-    tokenized_dataset = dataset.map(
+    tok_datat = dataset.map(
         get_preproc_function(tokenizer),
         batched=True,
         remove_columns=dataset["train"].column_names,
         num_proc=8,
     )
-    tokenized_dataset.set_format("torch")
+    tok_datat.set_format("torch")
     print(model.generator.parameters())
     print(model.question_encoder.parameters())
     # optimizer = torch.optim.AdamW(model.question_encoder.parameters(), lr=LR)
-    optimizer = torch.optim.AdamW(model.generator.parameters(), lr=LR)
+    optimizer = torch.optim.AdamW(model.generator.parameters(), lr=lr)
 
-    print("beginning loop...")
-    for _ in range(EPOCHS):
-        data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
+    print("begin training loop...")
+    for epoch in range(epochs):
+        print(f"Epoch: {epoch}")
+        epoch_loss = 0
+        data_iter = tok_datat["train"].iter(batch_size, drop_last_batch=True)
         for i, batch in enumerate(data_iter):
             print(f"batch #{i}")
             pad_batch(batch)
             optimizer.zero_grad()
             output = model(**batch)
             print_batch(tokenizer, batch, output)
-            output.loss.sum(1).backward()
+            batch_loss = output.loss.sum()
+            batch_loss.backward()
             optimizer.step()
+            epoch_loss += batch_loss
+        metrics = {"loss": epoch_loss}
+        if run:
+            run.log(metrics)
+    print("finished training")
 
 
 def print_batch(
