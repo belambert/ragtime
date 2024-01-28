@@ -44,9 +44,7 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     for i, batch in enumerate(data_iter):
         print(i)
         print(batch)
-        batch["input_ids"] = pad_batch(batch["input_ids"], -100)
-        batch["attention_mask"] = pad_batch(batch["attention_mask"], 0)
-        # we also have `token_type_ids` and `labels`
+        pad_batch(batch)
         print(batch)
         output = model(**batch)
         print(output.loss)
@@ -119,14 +117,21 @@ def get_preproc_function(tokenizer):
     return preprocess
 
 
-def pad_batch(vectors: list[torch.Tensor], value) -> torch.Tensor:
+def pad_batch(batch) -> None:
+    batch["input_ids"] = pad_vectors(batch["input_ids"], -100)
+    batch["labels"] = pad_vectors(batch["labels"], -100)
+    batch["attention_mask"] = pad_vectors(batch["attention_mask"], 0)
+    batch["token_type_ids"] = pad_vectors(batch["token_type_ids"], 0)
+
+
+def pad_vectors(vectors: list[torch.Tensor], value) -> torch.Tensor:
     assert all(map(lambda x: len(x.shape) == 1, vectors))
     max_len = max(map(lambda x: x.shape[0], vectors))
-    padded = map(lambda x: pad_to_length(x, max_len, value), vectors)
+    padded = map(lambda x: pad_vector(x, max_len, value), vectors)
     return torch.stack(tuple(padded))
 
 
-def pad_to_length(vector: torch.Tensor, length: int, value) -> torch.Tensor:
+def pad_vector(vector: torch.Tensor, length: int, value) -> torch.Tensor:
     # pylint: disable-next=not-callable
     return torch.nn.functional.pad(vector, (0, length - len(vector)), value=value)
 
