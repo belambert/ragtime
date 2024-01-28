@@ -1,3 +1,4 @@
+import math
 from itertools import chain
 from typing import Callable
 
@@ -22,7 +23,6 @@ from ragtime.device import get_device
 # https://huggingface.co/datasets/wiki_dpr
 # https://huggingface.co/facebook/rag-token-nq
 # https://huggingface.co/docs/transformers/model_doc/rag
-
 
 # For Ray finetuning see:
 # https://huggingface.co/blog/ray-rag
@@ -67,6 +67,8 @@ def main(
     params = chain(model.generator.parameters(), model.question_encoder.parameters())
     optimizer = torch.optim.AdamW(params, lr=lr)
 
+    batches_per_epoch = math.ceil(len(tok_data["train"]) / batch_size)
+    print(f"batches per epoch: {batches_per_epoch}")
     print("begin training loop...")
     for epoch in range(epochs):
         print(f"Epoch: {epoch}")
@@ -74,6 +76,7 @@ def main(
         model.train()
         data_iter = tok_data["train"].iter(batch_size, drop_last_batch=True)
         for i, batch in enumerate(data_iter):
+            print(f"batch: {i} / {batches_per_epoch}")
             pad_batch(batch)
             optimizer.zero_grad()
             output = model(**batch)

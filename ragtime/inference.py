@@ -1,3 +1,4 @@
+import torch
 import typer
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
@@ -35,14 +36,24 @@ def main(query: Annotated[str, typer.Argument()]):
     print(input_dict)
 
     print("generating...")
-    # return RetrievAugLMOutput ?
+    # returns RetrievAugLMOutput ?
     result = model(**input_dict, output_retrieved=True)
-    print(result)
-    print(result.doc_scores)  # these have values
-    print(result.retrieved_doc_ids)  # this is None
     print(result.logits)
+    _print_docs(result.retrieved_doc_ids, result.doc_scores, dataset)
     # get argmax over logits, then decode
     # print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
+
+
+def _print_docs(doc_ids, doc_scores, dataset):
+    doc_ids = torch.flatten(doc_ids).tolist()
+    docs = list(zip(doc_ids, torch.flatten(doc_scores).tolist()))
+    docs.sort(key=lambda x: x[1], reverse=True)
+    for id_, score in docs:
+        print("*" * 60)
+        print(f"__{id_}__({score})")
+        print(dataset[id_]["title"])
+        print(dataset[id_]["text"])
+    print("*" * 60)
 
 
 if __name__ == "__main__":
