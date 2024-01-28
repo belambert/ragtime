@@ -21,12 +21,19 @@ from ragtime.device import get_device
 # Refer to:
 # https://huggingface.co/datasets/wiki_dpr
 # https://huggingface.co/facebook/rag-token-nq
+# https://huggingface.co/docs/transformers/model_doc/rag
+
 
 # For Ray finetuning see:
 # https://huggingface.co/blog/ray-rag
 # https://shamanesiri.medium.com/how-to-finetune-the-entire-rag-architecture-including-dpr-retriever-4b4385322552
 # https://github.com/huggingface/transformers/blob/main/examples/research_projects/rag/finetune_rag.py
 
+
+# RetrievAugLMOutput vs RetrievAugLMMarginOutput
+
+# what to do about RagConfig?
+# it has an option: output_retrieved
 
 MAX_LENGTH = 128
 
@@ -118,6 +125,46 @@ def load_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
     print("loading model...")
     model = RagTokenForGeneration.from_pretrained(
         "facebook/rag-token-nq", retriever=retriever
+    )
+    return tokenizer, model
+
+
+def load_base_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
+    """Load the RAG model. If debug=True, use the dummy dataset.
+
+    The question encoder can be any autoencoding model, preferably DPRQuestionEncoder,
+    and the generator can be any seq2seq model, preferably BartForConditionalGeneration.
+
+    The model can be initialized with a RagRetriever for end-to-end generation or
+    used in combination with the outputs of a retriever in multiple steps---see
+    examples for more details. The model is compatible any autoencoding model
+    as the question_encoder and any seq2seq model with language model head as
+    the generator. It has been tested with DPRQuestionEncoder as the question_encoder
+    and BartForConditionalGeneration or T5ForConditionalGeneration as the generator.
+    """
+    print("loading tokenizer...")
+    tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
+
+    print("loading retriever...")
+    if debug:
+        retriever = RagRetriever.from_pretrained(
+            "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
+        )
+    else:
+        retriever = RagRetriever.from_pretrained(
+            "facebook/rag-token-nq",
+            index_name="custom",
+            passages_path="/mnt/disks/data/wiki_dpr",
+            index_path="/mnt/disks/data/wiki_dpr.faiss",
+        )
+
+    # RagRetriever(config=None, )
+    print("loading model...")
+    model = RagTokenForGeneration(
+        config=None,
+        question_encoder=None,
+        generator=None,
+        retriever=retriever,
     )
     return tokenizer, model
 

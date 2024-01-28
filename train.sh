@@ -1,7 +1,4 @@
-# poetry run python ./ragtime/train_translate.py
-# poetry run python ./ragtime/main.py \"what are asters?\""
-
-gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - <<EOD
+gcloud batch jobs submit --job-prefix ragtime-train --location us-central1 --config - <<EOD
 {
   "taskGroups": [
     {
