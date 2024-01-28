@@ -10,7 +10,7 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
       "taskSpec": {
         "computeResource": {
           "cpuMilli": "8000",
-          "memoryMib": "32000",
+          "memoryMib": "64000",
           "bootDiskMib": "10000"
         },
         "runnables": [
@@ -20,7 +20,7 @@ gcloud batch jobs submit --job-prefix ragtime --location us-central1 --config - 
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./ragtime/train.py --wandb --batch-size 16"
+                "poetry run python ./ragtime/train.py --wandb --batch-size 8"
               ],
               "volumes": []
             }
