@@ -1,3 +1,8 @@
+"""
+Fine-tuning a RAG model with a Seq2SeqTrainer doesn't seem to be possible.
+The Seq2Seq collator has trouble padding the batches.
+"""
+
 import typer
 from datasets import load_dataset
 from transformers import (
@@ -11,16 +16,6 @@ from transformers import (
 from typing_extensions import Annotated
 
 from ragtime.device import get_device
-
-# Refer to:
-# https://huggingface.co/datasets/wiki_dpr
-# https://huggingface.co/facebook/rag-token-nq
-
-# For Ray finetuning see:
-# https://huggingface.co/blog/ray-rag
-# https://shamanesiri.medium.com/how-to-finetune-the-entire-rag-architecture-including-dpr-retriever-4b4385322552
-# https://github.com/huggingface/transformers/blob/main/examples/research_projects/rag/finetune_rag.py
-
 
 MAX_LENGTH = 128
 EPOCHS = 1
