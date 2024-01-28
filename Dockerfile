@@ -13,9 +13,9 @@ ENV WANDB_API_KEY=934436ad14ceb55b75a7917bc289ec0ac28246e2 \
     DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && \
-    apt install software-properties-common -y --no-install-recommends && \
+    apt install software-properties-common -y && \
     add-apt-repository ppa:graphics-drivers && \
-    apt install nvidia-driver-535 -y && \
+    apt install nvidia-driver-535 -y --no-install-recommends && \
     apt install python3.11 python3-pip -y --no-install-recommends && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/*
