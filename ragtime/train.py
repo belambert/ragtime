@@ -37,12 +37,14 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     tokenized_dataset.set_format("torch")
 
     print(tokenized_dataset)
-    print(tokenized_dataset["train"][0])
+    # print(tokenized_dataset["train"][0])
 
+    print("getting iterator...")
     data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
 
+    print("beginning loop...")
     for i, batch in enumerate(data_iter):
-        print(i)
+        print(f"batch #{i}")
         print(batch)
         pad_batch(batch)
         print(batch)
@@ -105,6 +107,7 @@ def load_ms_marco(debug: bool = False) -> Dataset:
     return dataset
 
 
+# is this right?
 def get_preproc_function(tokenizer):
     def preprocess(examples):
         inputs = examples["query"]
