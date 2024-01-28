@@ -68,7 +68,9 @@ def main(debug: Annotated[bool, typer.Option()] = False):
     print(tokenized_dataset)
     print(tokenized_dataset["train"][0])
 
-    for i, batch in tokenized_dataset["train"].iter(4, drop_last_batch=True):
+    data_iter = tokenized_dataset["train"].iter(4, drop_last_batch=True)
+
+    for i, batch in enumerate(data_iter):
         print(i)
         print(batch)
 
