@@ -17,7 +17,7 @@ gcloud batch jobs submit --job-prefix ragtime-inference --location us-central1 -
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./ragtime/inference.py \"what is rba?\""
+                "poetry run python ./ragtime/inference.py \"what is rba?\" --citations --sources"
               ],
               "volumes": []
             }
