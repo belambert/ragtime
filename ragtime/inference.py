@@ -1,12 +1,18 @@
 import torch
 import typer
+from halo import Halo
+from termcolor import colored
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
 
 from ragtime.device import get_device
 
 
-def main(query: Annotated[str, typer.Argument()]):
+def main(
+    query: Annotated[str, typer.Argument()],
+    citations: Annotated[bool, typer.Option()] = False,
+    sources: Annotated[bool, typer.Option()] = False,
+):
     """
     Do RAG inference on the given query.
     """
@@ -33,27 +39,33 @@ def main(query: Annotated[str, typer.Argument()]):
     )
     print("preparing input...")
     input_dict = tokenizer.prepare_seq2seq_batch(query, return_tensors="pt")
-    print(input_dict)
 
-    print("generating...")
     # returns RetrievAugLMOutput ?
-    result = model(**input_dict, output_retrieved=True)
-    print(result.logits)
-    _print_docs(result.retrieved_doc_ids, result.doc_scores, dataset)
-    # get argmax over logits, then decode
-    # print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
+    with Halo(text="generating...", spinner="dots") as spinner:
+        result = model(**input_dict, output_retrieved=True)
+        spinner.succeed()
+    print(type(result))
+    print(result.logits.shape)
+    token_ids = torch.argmax(result.logits, dim=2)  # -1 dimension?
+    print(token_ids.shape)
+    print(token_ids)
+    if citations:
+        _print_docs(
+            result.retrieved_doc_ids, result.doc_scores, dataset, print_passages=sources
+        )
+    print(tokenizer.batch_decode(token_ids, skip_special_tokens=True)[0])
 
 
-def _print_docs(doc_ids, doc_scores, dataset):
+def _print_docs(doc_ids, doc_scores, dataset, print_passages=False):
     doc_ids = torch.flatten(doc_ids).tolist()
     docs = list(zip(doc_ids, torch.flatten(doc_scores).tolist()))
     docs.sort(key=lambda x: x[1], reverse=True)
     for id_, score in docs:
-        print("*" * 60)
-        print(f"__{id_}__({score})")
-        print(dataset[id_]["title"])
-        print(dataset[id_]["text"])
-    print("*" * 60)
+        print(f"{dataset[id_]['title']} ({score:.2f})", end="")
+        if print_passages:
+            passage = colored(dataset[id_]["text"], "dark_grey")
+            print(passage, end="")
+        print()
 
 
 if __name__ == "__main__":
