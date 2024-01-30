@@ -1,3 +1,7 @@
+"""
+Code for fine-tuning a RAG model.
+"""
+
 import math
 from itertools import chain
 from pathlib import Path
@@ -163,6 +167,7 @@ def pad_vector(vector: Tensor, length: int, pad: int) -> Tensor:
 
 
 def cli() -> None:
+    """Run main() with typer."""
     typer.run(main)
 
 

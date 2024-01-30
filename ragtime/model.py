@@ -1,3 +1,8 @@
+"""
+Code for loading the RAG model, tokenizer, index, and retriever from
+various locations.
+"""
+
 from contextlib import redirect_stderr
 from pathlib import Path
 

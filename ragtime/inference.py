@@ -1,3 +1,7 @@
+"""
+CLI to use a RAG model for inference.
+"""
+
 import torch
 import typer
 from datasets import Dataset
@@ -12,8 +16,8 @@ from .model import load_model
 
 def main(
     query: Annotated[str, typer.Argument()],
-    citations: Annotated[bool, typer.Option()] = False,
-    sources: Annotated[bool, typer.Option()] = False,
+    articles: Annotated[bool, typer.Option(help="print names of articles")] = False,
+    passages: Annotated[bool, typer.Option(help="print passages used")] = False,
 ) -> None:
     """
     Do RAG inference on the given query.
@@ -32,9 +36,12 @@ def main(
         spinner.succeed()
     print("Answer:", end="")
     print(tokenizer.batch_decode(generated, skip_special_tokens=True)[0])
-    if citations:
+    if articles:
         _print_docs(
-            result.retrieved_doc_ids, result.doc_scores, dataset, print_passages=sources
+            result.retrieved_doc_ids,
+            result.doc_scores,
+            dataset,
+            print_passages=passages,
         )
 
 
@@ -54,6 +61,7 @@ def _print_docs(
 
 
 def cli() -> None:
+    """Run main() with typer."""
     typer.run(main)
 
 
