@@ -16,7 +16,7 @@ from ragtime.train import (
 def main(
     debug: Annotated[bool, typer.Option(help="use data subset")] = False,
     batch_size: Annotated[int, typer.Option(help="batch size")] = 4,
-):
+) -> None:
     """..."""
 
     device = get_device()
@@ -43,5 +43,9 @@ def main(
             # print it somewhere...
 
 
-if __name__ == "__main__":
+def cli() -> None:
     typer.run(main)
+
+
+if __name__ == "__main__":
+    cli()
