@@ -1,3 +1,7 @@
+"""
+This script is a work in progress.
+"""
+
 import typer
 
 # from transformers import RagTokenizer

@@ -17,7 +17,7 @@ If you don't already have python `poetry` installed, run this:
     pip install poetry
 
 Once poetry is installed, you can set up a new virtual environment and install
-wikibot by running:
+ragtime by running:
 
     poetry install
 

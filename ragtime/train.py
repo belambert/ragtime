@@ -7,13 +7,7 @@ import typer
 import wandb as wb
 from datasets import Dataset, load_dataset
 from torch import Tensor
-from transformers import (
-    BatchEncoding,
-    RagModel,
-    RagRetriever,
-    RagTokenForGeneration,
-    RagTokenizer,
-)
+from transformers import BatchEncoding, RagTokenizer
 from transformers.modeling_outputs import ModelOutput
 from typing_extensions import Annotated
 
@@ -109,46 +103,6 @@ def print_batch(
     for q, a, loss in zip(questions, answers, output.loss):
         print(f"Q: {q}")
         print(f"A: [{loss}] {a} ")
-
-
-def load_base_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
-    """Load the RAG model. If debug=True, use the dummy dataset.
-
-    The question encoder can be any autoencoding model, preferably DPRQuestionEncoder,
-    and the generator can be any seq2seq model, preferably BartForConditionalGeneration.
-
-    The model can be initialized with a RagRetriever for end-to-end generation or
-    used in combination with the outputs of a retriever in multiple steps---see
-    examples for more details. The model is compatible any autoencoding model
-    as the question_encoder and any seq2seq model with language model head as
-    the generator. It has been tested with DPRQuestionEncoder as the question_encoder
-    and BartForConditionalGeneration or T5ForConditionalGeneration as the generator.
-    """
-    print("loading tokenizer...")
-    tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
-
-    print("loading retriever...")
-    if debug:
-        retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
-        )
-    else:
-        retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq",
-            index_name="custom",
-            passages_path="/mnt/disks/data/wiki_dpr",
-            index_path="/mnt/disks/data/wiki_dpr.faiss",
-        )
-
-    # RagRetriever(config=None, )
-    print("loading model...")
-    model = RagTokenForGeneration(
-        config=None,
-        question_encoder=None,
-        generator=None,
-        retriever=retriever,
-    )
-    return tokenizer, model
 
 
 def load_ms_marco(debug: bool = False) -> Dataset:
