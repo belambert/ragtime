@@ -1,5 +1,6 @@
 import math
 from itertools import chain
+from pathlib import Path
 from typing import Callable
 
 import torch
@@ -32,13 +33,15 @@ from .model import load_model
 MAX_LENGTH = 128
 
 
-# pylint: disable-next=too-many-locals
+# pylint: disable-next=too-many-locals, too-many-arguments
 def main(
     debug: Annotated[bool, typer.Option(help="use data subset")] = False,
     epochs: Annotated[int, typer.Option(help="num epochs")] = 100,
     lr: Annotated[float, typer.Option(help="learning rate")] = 0.001,
     batch_size: Annotated[int, typer.Option(help="batch size")] = 4,
     wandb: Annotated[bool, typer.Option(help="use wandb")] = False,
+    output: Annotated[Path, typer.Option(help="out model location")] = Path("output"),
+    max_steps: Annotated[float, typer.Option(help="max train steps")] = float("inf"),
 ) -> None:
     """Fine-tune a RAG model with the MS MARCO dataset."""
     run = wb.init(project="ragtime", mode="online" if wandb else "disabled")
@@ -64,6 +67,7 @@ def main(
     batches_per_epoch = math.ceil(len(tok_data["train"]) / batch_size)
     print(f"batches per epoch: {batches_per_epoch}")
     print("begin training loop...")
+    total_steps = 0
     for epoch in range(epochs):
         print(f"Epoch: {epoch}")
         epoch_loss = 0
@@ -73,20 +77,25 @@ def main(
             print(f"batch: {i} / {batches_per_epoch}")
             pad_batch(batch)
             optimizer.zero_grad()
-            output = model(**batch)
+            result = model(**batch)
             if i == 0:
-                print_batch(tokenizer, batch, output)
-            batch_loss = output.loss.sum()
+                print_batch(tokenizer, batch, result)
+            batch_loss = result.loss.sum()
             batch_loss.backward()
             optimizer.step()
             epoch_loss += batch_loss.item()
             del batch
+            total_steps += 1
+            if total_steps > max_steps:
+                break
+        if total_steps > max_steps:
+            break
         metrics = {"loss": epoch_loss}
         print(metrics)
         if run:
             run.log(metrics)
-    print("saving model...")
-    model.save_pretrained("tuned_model")
+    print("saving model to {output.absolute}...")
+    model.save_pretrained(output.absolute)
     print("finished.")
 
 
