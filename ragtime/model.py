@@ -5,6 +5,8 @@ from transformers import RagModel, RagRetriever, RagTokenForGeneration, RagToken
 
 DATA_FOLDER = Path("/mnt/disks/data/")
 
+# Use "facebook/tag-token-base" instead to fine-tune from the initial model
+
 
 def load_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
     """Load the RAG model. If debug=True, use the dummy dataset."""

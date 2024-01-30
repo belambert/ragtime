@@ -1,3 +1,6 @@
+# script to launch training on a GCP Batch machine with a GPU and attached disk holding
+# the wiki_dpr data
+
 gcloud batch jobs submit --job-prefix ragtime-train --location us-central1 --config - <<EOD
 {
   "taskGroups": [
@@ -17,7 +20,7 @@ gcloud batch jobs submit --job-prefix ragtime-train --location us-central1 --con
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./ragtime/train.py --wandb --batch-size 8"
+                "poetry run train --wandb --batch-size 8"
               ],
               "volumes": []
             }

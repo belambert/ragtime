@@ -44,13 +44,11 @@ def _print_docs(
     doc_ids_list = torch.flatten(doc_ids).tolist()
     docs = list(zip(doc_ids_list, torch.flatten(doc_scores).tolist()))
     docs.sort(key=lambda x: x[1], reverse=True)
-    print(colored("Sources", attrs=["underline"], force_color=True))
+    print(colored("Sources", attrs=["underline"]))
     for id_, score in docs:
         print(f"{dataset[id_]['title']} ({score:.2f})", end="")
         if print_passages:
-            passage = " - " + colored(
-                dataset[id_]["text"], "dark_grey", force_color=True
-            )
+            passage = " - " + colored(dataset[id_]["text"], "dark_grey")
             print(passage, end="")
         print()
 

@@ -1,3 +1,6 @@
+# script to launch inference on a GCP Batch machine with a GPU and attached disk holding
+# the wiki_dpr data
+
 gcloud batch jobs submit --job-prefix ragtime-inference --location us-central1 --config - <<EOD
 {
   "taskGroups": [
@@ -17,7 +20,7 @@ gcloud batch jobs submit --job-prefix ragtime-inference --location us-central1 -
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run python ./ragtime/inference.py \"what is rba?\" --citations --sources"
+                "poetry run inference \"what is a white oak?\" --citations --sources"
               ],
               "volumes": []
             }

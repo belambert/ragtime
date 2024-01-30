@@ -25,4 +25,4 @@ RUN apt update && \
 
 RUN pip install poetry==1.7.1
 RUN poetry install --without dev && rm -rf $POETRY_CACHE_DIR
-CMD ["poetry", "run", "python", "ragtime/train.py"]
+CMD ["poetry", "run", "train"]
