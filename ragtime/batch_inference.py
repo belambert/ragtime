@@ -21,7 +21,7 @@ def main(
     debug: Annotated[bool, typer.Option(help="use data subset")] = False,
     batch_size: Annotated[int, typer.Option(help="batch size")] = 4,
 ) -> None:
-    """..."""
+    """Do inference on MS MARCO data in a batch for testing/evaluation."""
 
     device = get_device()
     print(device)
@@ -48,6 +48,7 @@ def main(
 
 
 def cli() -> None:
+    """Run main() with typer."""
     typer.run(main)
 
 

@@ -66,9 +66,4 @@ ignore_missing_imports = true
 score = false
 
 [tool.pylint."messages control"]
-disable = [
-    "duplicate-code",
-    "missing-module-docstring",
-    "missing-class-docstring",
-    "missing-function-docstring",
-]
+disable = ["duplicate-code"]

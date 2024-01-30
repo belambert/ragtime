@@ -7,7 +7,7 @@ tuned on the [Natural Questions dataset](https://huggingface.co/datasets/natural
 short answers. This means it typically gives very short responses, often only
 1-3 words long. However, wikipedia contains very rich and detailed information,
 so we should be able to fine-tune a RAG model to give more detailed answers. In
-this repo, I attempt to fine-tune the original RAG model to produce longer and
+this project, I attempt to fine-tune the original RAG model to produce longer and
 more detailed answers.
 
 Setup
@@ -17,7 +17,7 @@ If you don't already have python `poetry` installed, run this:
     pip install poetry
 
 Once poetry is installed, you can set up a new virtual environment and install
-ragtime by running:
+by checking out the git repo and running:
 
     poetry install
 
@@ -31,11 +31,11 @@ To use, give queries on the command line, like this:
 Answer: quercus alba
 ```
 
-Use the options `--citations` and `--sources` to see which wikipedia snippets were
+Use the options `--articles` and `--passages` to see which wikipedia snippets were
 used to generate the answer.
 
 ```console
-> poetry run inference "what is a white oak?" --citations --sources
+> poetry run inference "what is a white oak?" --articles --passages
 ✔ generating...
 Answer: quercus alba
 Sources
