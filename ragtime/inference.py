@@ -1,18 +1,13 @@
-from contextlib import redirect_stderr
-from pathlib import Path
-
 import torch
 import typer
 from datasets import Dataset
 from halo import Halo
 from termcolor import colored
 from torch import Tensor
-from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
 
-from ragtime.device import get_device
-
-DATA_PREFIX = "/mnt/disks/data/"
+from .device import get_device
+from .model import load_model
 
 
 def main(
@@ -26,31 +21,9 @@ def main(
     device = get_device()
     print(device)
 
-    print("loading tokenizer...")
-    tokenizer = RagTokenizer.from_pretrained(
-        "facebook/rag-token-nq",
-    )
-    print("loading retriever...")
-    if Path(DATA_PREFIX).exists():
-        with redirect_stderr(None):
-            retriever = RagRetriever.from_pretrained(
-                "facebook/rag-token-nq",
-                index_name="custom",
-                passages_path="/mnt/disks/data/wiki_dpr",
-                index_path="/mnt/disks/data/wiki_dpr.faiss",
-            )
-    else:
-        with redirect_stderr(None):
-            retriever = RagRetriever.from_pretrained(
-                "facebook/rag-token-nq", dataset="wiki_dpr", index_name="compressed"
-            )
-    dataset = retriever.index.dataset
-    print("loading model...")
-    with redirect_stderr(None):
-        model = RagTokenForGeneration.from_pretrained(
-            "facebook/rag-token-nq",
-            retriever=retriever,
-        )
+    tokenizer, model = load_model(False)
+    dataset = model.retriever.index.dataset
+
     input_dict = tokenizer.prepare_seq2seq_batch(query, return_tensors="pt")
 
     with Halo(text="generating...", spinner="dots") as spinner:
@@ -71,11 +44,13 @@ def _print_docs(
     doc_ids_list = torch.flatten(doc_ids).tolist()
     docs = list(zip(doc_ids_list, torch.flatten(doc_scores).tolist()))
     docs.sort(key=lambda x: x[1], reverse=True)
-    print(colored("Sources", attrs=["underline"]))
+    print(colored("Sources", attrs=["underline"], force_color=True))
     for id_, score in docs:
         print(f"{dataset[id_]['title']} ({score:.2f})", end="")
         if print_passages:
-            passage = " - " + colored(dataset[id_]["text"], "dark_grey")
+            passage = " - " + colored(
+                dataset[id_]["text"], "dark_grey", force_color=True
+            )
             print(passage, end="")
         print()
 

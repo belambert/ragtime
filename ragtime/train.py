@@ -17,7 +17,8 @@ from transformers import (
 from transformers.modeling_outputs import ModelOutput
 from typing_extensions import Annotated
 
-from ragtime.device import get_device
+from .device import get_device
+from .model import load_model
 
 # Refer to:
 # https://huggingface.co/datasets/wiki_dpr
@@ -90,7 +91,9 @@ def main(
         print(metrics)
         if run:
             run.log(metrics)
-    print("finished training")
+    print("saving model...")
+    model.save_pretrained("tuned_model")
+    print("finished.")
 
 
 def print_batch(
@@ -106,29 +109,6 @@ def print_batch(
     for q, a, loss in zip(questions, answers, output.loss):
         print(f"Q: {q}")
         print(f"A: [{loss}] {a} ")
-
-
-def load_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
-    """Load the RAG model. If debug=True, use the dummy dataset."""
-    print("loading tokenizer...")
-    tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
-    print("loading retriever...")
-    if debug:
-        retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
-        )
-    else:
-        retriever = RagRetriever.from_pretrained(
-            "facebook/rag-token-nq",
-            index_name="custom",
-            passages_path="/mnt/disks/data/wiki_dpr",
-            index_path="/mnt/disks/data/wiki_dpr.faiss",
-        )
-    print("loading model...")
-    model = RagTokenForGeneration.from_pretrained(
-        "facebook/rag-token-nq", retriever=retriever
-    )
-    return tokenizer, model
 
 
 def load_base_model(debug: bool = False) -> tuple[RagTokenizer, RagModel]:
