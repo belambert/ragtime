@@ -1,11 +1,12 @@
-
-The original RAG implementation is a compelling natural language interface to
-Wikipedia.  The [fine-tuned version available on
+ragtime
+=======
+The [original RAG implementation](https://arxiv.org/pdf/2005.11401.pdf) is a
+compelling natural language interface to Wikipedia.  The [fine-tuned version available on
 Huggingface](https://huggingface.co/facebook/rag-token-nq) appears to be fine
 tuned on the [Natural Questions dataset](https://huggingface.co/datasets/natural_questions)
-short answers, which means it typically gives very short responses, often
-only 1-3 words long. However, wikipedia contains very rich and detailed information,
-so a RAG model should be able to be fine-tuned to give more detailed answers. In
+short answers. This means it typically gives very short responses, often only
+1-3 words long. However, wikipedia contains very rich and detailed information,
+so we should be able to fine-tune a RAG model to give more detailed answers. In
 this repo, I attempt to fine-tune the original RAG model to produce longer and
 more detailed answers.
 
@@ -24,7 +25,39 @@ Using
 =====
 To use, give queries on the command line, like this:
 
-    poetry run python ./ragtime/inference.py "what is a sunflower?"
+    poetry run inference "what is a marginal wood fern?"
+
+
+Fine-tuning
+===========
+The `ragtime/train.py` script is set up to fine-tune the RAG model using the MS MARCO
+dataset. The answers from this dataset appear to be a little longer than those from
+Natural Questions. But this code could be modified to train from any dataset of
+questions and answers.
+
+To train, run:
+
+    poetry run train
+
+A few training parameters can be set with CLI option. Pass the `--help` flag to see
+them.
+
+```console
+> poetry run train  --help
+Usage: train [OPTIONS]
+
+  Fine-tune a RAG model with the MS MARCO dataset.
+
+Options:
+  --debug / --no-debug  use data subset  [default: no-debug]
+  --epochs INTEGER      num epochs  [default: 100]
+  --lr FLOAT            learning rate  [default: 0.001]
+  --batch-size INTEGER  batch size  [default: 4]
+  --wandb / --no-wandb  use wandb  [default: no-wandb]
+  --help                Show this message and exit.
+```
+
+
 
 -----
 

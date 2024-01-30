@@ -2,7 +2,7 @@ import typer
 from transformers import RagRetriever
 
 
-def main():
+def main() -> None:
     """
     Save the index and dataset to their own folders.
     """
@@ -17,5 +17,9 @@ def main():
     dataset.save_to_disk("~/wiki_dpr")
 
 
-if __name__ == "__main__":
+def cli() -> None:
     typer.run(main)
+
+
+if __name__ == "__main__":
+    cli()

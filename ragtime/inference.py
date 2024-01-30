@@ -3,8 +3,10 @@ from pathlib import Path
 
 import torch
 import typer
+from datasets import Dataset
 from halo import Halo
 from termcolor import colored
+from torch import Tensor
 from transformers import RagRetriever, RagTokenForGeneration, RagTokenizer
 from typing_extensions import Annotated
 
@@ -17,7 +19,7 @@ def main(
     query: Annotated[str, typer.Argument()],
     citations: Annotated[bool, typer.Option()] = False,
     sources: Annotated[bool, typer.Option()] = False,
-):
+) -> None:
     """
     Do RAG inference on the given query.
     """
@@ -63,9 +65,11 @@ def main(
         )
 
 
-def _print_docs(doc_ids, doc_scores, dataset, print_passages=False):
-    doc_ids = torch.flatten(doc_ids).tolist()
-    docs = list(zip(doc_ids, torch.flatten(doc_scores).tolist()))
+def _print_docs(
+    doc_ids: Tensor, doc_scores: Tensor, dataset: Dataset, print_passages: bool = False
+) -> None:
+    doc_ids_list = torch.flatten(doc_ids).tolist()
+    docs = list(zip(doc_ids_list, torch.flatten(doc_scores).tolist()))
     docs.sort(key=lambda x: x[1], reverse=True)
     print(colored("Sources", attrs=["underline"]))
     for id_, score in docs:
@@ -76,5 +80,9 @@ def _print_docs(doc_ids, doc_scores, dataset, print_passages=False):
         print()
 
 
-if __name__ == "__main__":
+def cli() -> None:
     typer.run(main)
+
+
+if __name__ == "__main__":
+    cli()

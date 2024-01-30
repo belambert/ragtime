@@ -5,6 +5,12 @@ description = ""
 authors = ["Ben Lambert <blambert@gmail.com>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+train = 'ragtime.train:cli'
+inference = 'ragtime.inference:cli'
+batch-inference = 'ragtime.batch_inference:cli'
+extract-dataset = 'ragtime.extract_dataset:cli'
+
 [tool.poetry.dependencies]
 python = "^3.10"
 transformers = "^4.36.2"
@@ -18,7 +24,6 @@ evaluate = "^0.4.1"
 halo = "^0.0.31"
 wandb = "^0.16.2"
 termcolor = "^2.4.0"
-
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
@@ -43,7 +48,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 check_untyped_defs = true
-# disallow_untyped_defs = true
+disallow_untyped_defs = true
+exclude = ['ragtime/examples']
 
 [[tool.mypy.overrides]]
 module = [

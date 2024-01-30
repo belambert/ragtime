@@ -32,8 +32,7 @@ from ragtime.device import get_device
 
 # RetrievAugLMOutput vs RetrievAugLMMarginOutput
 
-# what to do about RagConfig?
-# it has an option: output_retrieved
+# what to do about RagConfig? it has an option: output_retrieved
 
 MAX_LENGTH = 128
 
@@ -45,7 +44,7 @@ def main(
     lr: Annotated[float, typer.Option(help="learning rate")] = 0.001,
     batch_size: Annotated[int, typer.Option(help="batch size")] = 4,
     wandb: Annotated[bool, typer.Option(help="use wandb")] = False,
-):
+) -> None:
     """Fine-tune a RAG model with the MS MARCO dataset."""
     run = wb.init(project="ragtime", mode="online" if wandb else "disabled")
     wb.config.learning_rate = lr
@@ -220,5 +219,9 @@ def pad_vector(vector: Tensor, length: int, pad: int) -> Tensor:
     return torch.nn.functional.pad(vector, (0, length - len(vector)), value=pad)
 
 
-if __name__ == "__main__":
+def cli() -> None:
     typer.run(main)
+
+
+if __name__ == "__main__":
+    cli()
