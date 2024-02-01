@@ -26,7 +26,7 @@ wandb = "^0.16.2"
 termcolor = "^2.4.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.12.1"
+black = "^24.1.1"
 mypy = "^1.8.0"
 pylint = "^3.0.3"
 isort = "^5.13.2"
