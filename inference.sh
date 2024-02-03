@@ -20,7 +20,7 @@ gcloud batch jobs submit --job-prefix ragtime-inference --location us-central1 -
               "entrypoint": "/bin/sh",
               "commands": [
                 "-c",
-                "poetry run inference \"what is a white oak?\" --citations --sources"
+                "poetry run inference \"what is a white oak?\" --articles --passages"
               ],
               "volumes": []
             }
