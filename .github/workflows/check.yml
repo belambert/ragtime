@@ -23,7 +23,6 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'poetry'
-          cache-dependency-path: pyproject.toml
       - name: install
         run: poetry install --with=dev
       - name: run checks
