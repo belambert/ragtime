@@ -32,7 +32,7 @@ pylint = "^3.0.3"
 isort = "^5.13.2"
 types-requests = "^2.31.0.20240106"
 pytest = "^8.0.0"
-ruff = "^0.1.14"
+ruff = "^0.3.0"
 types-tqdm = "^4.66.0.20240106"
 
 [tool.black]
