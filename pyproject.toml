@@ -14,7 +14,7 @@ extract-dataset = 'ragtime.extract_dataset:cli'
 [tool.poetry.dependencies]
 python = "^3.10"
 transformers = "^4.36.2"
-datasets = "^2.16.1"
+datasets = "^2.17.1"
 torch = "^2.1.2"
 requests = "^2.31.0"
 typer = "^0.9.0"
